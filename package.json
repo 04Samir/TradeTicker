@@ -1,0 +1,63 @@
+{
+    "name": "trade-ticker",
+    "version": "1.0.0",
+    "repository": "https://github.com/04Samir/TradeTicker.git",
+    "author": "me@samir.cx",
+    "license": "MIT",
+    "private": true,
+    "packageManager": "yarn@1.22.22",
+    "scripts": {
+        "postinstall": "husky install",
+        "clean": "rimraf dist",
+        "format": "prettier --write .",
+        "lint": "eslint .",
+        "lint:fix": "yarn format && yarn lint --fix",
+        "dev:css": "tailwindcss -i src/public/css/lib/tailwind.css -o dist/public/css/lib/tailwind.css --watch",
+        "dev:public": "cpy \"src/public/**\" \"!src/public/css/lib/**\" dist/public --watch",
+        "dev:server": "tsx watch src/index.ts",
+        "dev": "yarn clean && concurrently \"yarn dev:css\" \"yarn dev:public\" \"yarn dev:server\"",
+        "build:css": "cross-env NODE_ENV=production tailwindcss -i src/public/css/lib/tailwind.css -o dist/public/css/lib/tailwind.css",
+        "build:public": "cpy \"src/public/**\" \"!src/public/css/lib/**\" dist/public",
+        "build:views": "cpy \"src/views/**/*\" dist/views",
+        "build:server": "tsc",
+        "build": "cross-env NODE_ENV=production yarn clean && yarn build:css && yarn build:public && yarn build:views && yarn build:server",
+        "start": "node dist/index.js"
+    },
+    "lint-staged": {
+        "*": [
+            "yarn format"
+        ],
+        "*.ts": [
+            "yarn lint:fix"
+        ]
+    },
+    "dependencies": {
+        "ejs": "^3.1.10",
+        "express": "^4.21.1",
+        "mysql2": "^3.11.5"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.16.0",
+        "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.10.1",
+        "autoprefixer": "^10.4.20",
+        "concurrently": "^9.1.0",
+        "cpy-cli": "^5.0.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^9.16.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-prettier": "^5.2.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^15.2.10",
+        "nodemon": "^3.1.7",
+        "postcss": "^8.4.49",
+        "prettier": "3.4.1",
+        "rimraf": "^5.0.10",
+        "tailwindcss": "^3.4.15",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.2",
+        "typescript-eslint": "^8.17.0"
+    }
+}
