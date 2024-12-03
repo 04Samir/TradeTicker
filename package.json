@@ -7,7 +7,7 @@
     "private": true,
     "packageManager": "yarn@1.22.22",
     "scripts": {
-        "postinstall": "husky install",
+        "postinstall": "husky",
         "clean": "rimraf dist",
         "format": "prettier --write .",
         "lint": "eslint .",
