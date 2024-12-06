@@ -1,4 +1,4 @@
-function updateSearchResults(category) {
+function updateSearchResults() {
     const data = {
         indices: [
             {
@@ -57,6 +57,8 @@ function updateSearchResults(category) {
         ],
     };
 
+    const category = $('.search-tab.text-blue-600').data('category');
+
     let results = [];
     if (category === 'All') {
         results = Object.keys(data).reduce(function (acc, key) {
@@ -78,9 +80,11 @@ function updateSearchResults(category) {
 
     $('#search-results').empty();
     if (results.length === 0) {
-        $('#search-results').append(
-            '<p class="text-center font-medium">No Symbols Match your Criteria!</p>',
-        );
+        $('#search-results').append(`
+            <p class="text-center font-medium text-gray-500 py-3">
+                No Symbols Match your Criteria!
+            </p>
+        `);
     } else {
         results.forEach(function (item) {
             const resultItem = `
@@ -102,7 +106,7 @@ function updateSearchResults(category) {
 }
 
 function initialiseSearchEvents() {
-    $('#search-bar').on('submit', function (event) {
+    $('#search-container').on('submit', function (event) {
         const query = $('#search-input').val().trim();
         if (query !== '') {
             window.location.href = `/search?q=${encodeURIComponent(query)}`;
@@ -121,8 +125,18 @@ function initialiseSearchEvents() {
     });
 
     $('#search-input').on('input', function () {
-        const category = $('.search-tab.text-blue-600').data('category');
-        updateSearchResults(category);
+        updateSearchResults();
+    });
+
+    $('#search-clear').on('click', function () {
+        $('#search-input').val('');
+        updateSearchResults();
+    });
+
+    $('#search-close').on('click', function () {
+        const event = jQuery.Event('keydown');
+        event.key = 'Escape';
+        $(document).trigger(event);
     });
 
     $('.search-tab').on('click', function (event) {
@@ -138,8 +152,7 @@ function initialiseSearchEvents() {
                 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
             );
 
-        const category = $(this).data('category');
-        updateSearchResults(category);
+        updateSearchResults();
     });
 }
 

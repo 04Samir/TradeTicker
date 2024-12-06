@@ -7,15 +7,26 @@
                 </a>
             </div>
 
-            <div id="search-container" class="flex-1 flex justify-center max-w-sm transition-all duration-200">
-                <form action="/search" method="GET" id="search-bar">
-                    <div class="flex items-center px-4 py-2 rounded-md border focus:outline-none bg-gray-50">
-                        <button type="submit" class="flex items-center" id="search-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-900">
+            <div id="search-section" class="flex-1 flex justify-center max-w-sm transition-all duration-200">
+                <form action="/search" method="GET" id="search-container">
+                    <div id="search-bar" class="flex items-center px-4 py-2 rounded-md border focus:outline-none bg-gray-50">
+                        <button type="submit" id="search-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600 hover:text-gray-900">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </button>
-                        <input type="text" name="q" placeholder="Search Markets" id="search-input" class="ml-2 bg-gray-50 text-gray-900 border-none focus:outline-none" size="10" />
+                        <input type="text" name="q" placeholder="Search Markets" id="search-input" class="ml-2 bg-gray-50 text-gray-500 border-none focus:outline-none" size="10" />
+                        <div id="search-options" class="hidden items-center space-x-2 ml-2">
+                            <button type="button" id="search-clear" class="ml-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                                Clear
+                            </button>
+                            <span class="mx-2 h-6 w-px bg-gray-300"></span>
+                            <button type="button" id="search-close" class="ml-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-900">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

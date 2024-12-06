@@ -13,12 +13,12 @@ $(function () {
         if (event.key === 'Escape') {
             $('.modal:not(.hidden)').each(function () {
                 hideModal($(this).attr('id'));
-            });
 
-            const focusedInput = $('input:focus');
-            if (focusedInput.length > 0) {
-                focusedInput.trigger('blur');
-            }
+                const focusedInput = $('input:focus');
+                if (focusedInput.length > 0) {
+                    focusedInput.trigger('blur');
+                }
+            });
         }
     });
 
@@ -26,11 +26,11 @@ $(function () {
         showModal('user-modal');
     });
 
-    $('#search-bar').on('click', function (event) {
+    $('#search-input').on('click', function (event) {
         if (event.isDefaultPrevented()) return;
 
         showModal('search-modal');
-        updateSearchResults('All');
+        updateSearchResults();
 
         const focusedInput = $('#search-input');
         if (focusedInput.length > 0) {

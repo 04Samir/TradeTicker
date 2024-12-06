@@ -3,9 +3,11 @@ function showModal(modalId) {
     $(`#${modalId}`).removeClass('hidden');
 
     if (modalId === 'search-modal') {
-        $('#search-container').removeClass('max-w-sm').addClass('max-w-2xl');
+        $('#search-section').removeClass('max-w-sm').addClass('max-w-2xl');
+        $('#search-container').addClass('w-full');
         $('#search-bar').addClass('w-full');
         $('#search-input').removeAttr('size').addClass('w-full').val('');
+        $('#search-options').removeClass('hidden').addClass('flex');
         $('#navbar-items').addClass('hidden');
         $('#brand-name').addClass('hidden');
         $('#navbar')
@@ -20,9 +22,11 @@ function hideModal(modalId) {
     $(`#${modalId}`).addClass('hidden');
 
     if (modalId === 'search-modal') {
-        $('#search-container').addClass('max-w-sm').removeClass('max-w-2xl');
+        $('#search-section').addClass('max-w-sm').removeClass('max-w-2xl');
+        $('#search-container').removeClass('w-full');
         $('#search-bar').removeClass('w-full');
         $('#search-input').attr('size', 10).removeClass('w-full').val('');
+        $('#search-options').addClass('hidden').removeClass('flex');
         $('#navbar-items').removeClass('hidden');
         $('#brand-name').removeClass('hidden');
         $('#navbar')
