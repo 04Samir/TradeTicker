@@ -1,16 +1,23 @@
 // @ts-check
 import eslint from '@eslint/js';
+import eslintConfigJquery from 'eslint-config-jquery';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-    { ignores: ['dist/**/*'] },
-    eslint.configs.recommended,
-    tseslint.configs.recommended,
-    eslintPluginPrettierRecommended,
     {
+        ignores: ['dist/**/*', '**/public/js/lib/**/*'],
+    },
+    {
+        extends: [
+            eslint.configs.recommended,
+            tseslint.configs.recommended,
+            eslintPluginPrettierRecommended,
+        ],
         ...eslintConfigPrettier,
+        ...eslintConfigJquery,
         rules: {
             'padding-line-between-statements': [
                 'error',
@@ -18,6 +25,14 @@ export default tseslint.config(
                 { blankLine: 'always', prev: '*', next: 'block' },
                 { blankLine: 'always', prev: '*', next: 'export' },
             ],
+        },
+        languageOptions: {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            globals: {
+                ...globals.browser,
+                ...globals.jquery,
+            },
         },
     },
 );
