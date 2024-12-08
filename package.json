@@ -14,14 +14,14 @@
         "lint:fix": "yarn format && yarn lint --fix",
         "dev:css": "tailwindcss -i src/public/css/lib/tailwind.css -o dist/public/css/lib/tailwind.css --watch",
         "dev:public": "cpy \"src/public/**\" \"!src/public/css/lib/**\" dist/public --watch",
-        "dev:server": "tsx watch src/index.ts",
+        "dev:server": "tsx watch src/app.ts",
         "dev": "yarn clean && concurrently \"yarn dev:css\" \"yarn dev:public\" \"yarn dev:server\"",
         "build:css": "cross-env NODE_ENV=production tailwindcss -i src/public/css/lib/tailwind.css -o dist/public/css/lib/tailwind.css",
         "build:public": "cpy \"src/public/**\" \"!src/public/css/lib/**\" dist/public",
         "build:views": "cpy \"src/views/**/*\" dist/views",
         "build:server": "tsc",
         "build": "cross-env NODE_ENV=production yarn clean && yarn build:css && yarn build:public && yarn build:views && yarn build:server",
-        "start": "node dist/index.js"
+        "start": "node dist/app.js"
     },
     "lint-staged": {
         "*": [
