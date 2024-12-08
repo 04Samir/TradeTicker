@@ -10,6 +10,16 @@ const router = Router();
 
 const PEPPER = 'P3PP3R';
 
+router.get('/', (req: Request, res: Response) => {
+    res.render('layout', {
+        title: 'Auth',
+        view: 'auth',
+        type: 'login',
+        nav: false,
+        footer: false,
+    });
+});
+
 router.post('/validate-username', (req: Request, res: Response) => {
     const { username } = req.body;
 
@@ -44,6 +54,10 @@ router.post('/validate-username', (req: Request, res: Response) => {
     }
 
     return json.respond(res, 200);
+});
+
+router.get('/register', (req: Request, res: Response) => {
+    res.redirect('/auth');
 });
 
 router.post('/validate-password', (req: Request, res: Response) => {
@@ -141,6 +155,10 @@ router.post('/register', async (req: Request, res: Response) => {
         console.error('Error in /register:', error);
         return json.error(res, 500);
     }
+});
+
+router.get('/login', (req: Request, res: Response) => {
+    res.redirect('/auth');
 });
 
 router.post('/login', async (req: Request, res: Response) => {

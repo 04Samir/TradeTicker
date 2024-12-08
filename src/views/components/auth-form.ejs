@@ -1,0 +1,45 @@
+<div class="flex items-center justify-between mb-6">
+    <h2 id="auth-form-title" class="text-lg font-bold text-gray-900">Welcome Back!</h2>
+</div>
+<form action="/auth/login" method="POST" class="mt-6 <%= type === 'login' ? '' : 'hidden' %>" id="login-form">
+    <div class="mb-4">
+        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+        <input type="text" id="username" name="username" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="john_doe" />
+    </div>
+    <div class="mb-4">
+        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="password" name="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="••••••••" />
+    </div>
+    <div class="flex items-center justify-between mt-6">
+        <button type="submit" class="modal-login w-full rounded-md bg-blue-600 py-2 px-4 text-white font-bold hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Login
+        </button>
+    </div>
+    <p class="mt-2 text-sm text-center text-gray-600">
+        No Account?
+        <a href="#" class="auth-form-toggle text-blue-600 hover:underline">Register Here!</a>
+    </p>
+</form>
+<form action="/auth/register" method="POST" class="mt-6 <%= type === 'register' ? '' : 'hidden' %>" id="register-form">
+    <div class="mb-4">
+        <label for="register-username" class="block text-sm font-medium text-gray-700">Username</label>
+        <input type="text" id="register-username" name="username" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="john_doe" />
+    </div>
+    <div class="mb-4">
+        <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="register-password" name="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="••••••••" />
+    </div>
+    <div class="mb-4">
+        <label for="register-confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <input type="password" id="register-confirm-password" name="confirmedPassword" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="••••••••" />
+    </div>
+    <div class="flex items-center justify-between mt-6">
+        <button type="submit" class="modal-register w-full rounded-md bg-blue-600 py-2 px-4 text-white font-bold hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Register
+        </button>
+    </div>
+    <p class="mt-2 text-sm text-center text-gray-600">
+        Already Have an Account?
+        <a href="#" class="auth-form-toggle text-blue-600 hover:underline">Login Here!</a>
+    </p>
+</form>

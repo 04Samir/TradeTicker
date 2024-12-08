@@ -19,13 +19,17 @@
 </head>
 
 <body class="min-h-screen bg-gray-50 flex flex-col">
+    <% if (typeof nav === 'undefined' || nav) { %>
     <%- include('components/nav') %>
+    <% } %>
 
     <main class="flex-grow">
         <%- include(`templates/${view}`) %>
     </main>
 
+    <% if (typeof footer === 'undefined' || footer) { %>
     <%- include('components/footer') %>
+    <% } %>
     <script src="/js/lib/jquery.min.js"></script>
     <script src="/js/lib/chart.umd.min.js" type="module"></script>
     <script src="/js/main.js" type="module"></script>
