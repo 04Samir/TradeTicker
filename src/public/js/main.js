@@ -27,6 +27,59 @@ $(function () {
         showModal('user-modal');
     });
 
+    $('.auth-form-toggle').on('click', function (event) {
+        event.preventDefault();
+
+        $('#login-form').toggleClass('hidden');
+        $('#register-form').toggleClass('hidden');
+
+        if (!$('#login-form').hasClass('hidden')) {
+            $('#auth-form-title').text('Welcome Back!');
+            $('.auth-form-toggle').text('Register');
+        } else {
+            $('#auth-form-title').text('Create an Account');
+            $('.auth-form-toggle').text('Login');
+        }
+    });
+
+    $('form').on('submit', function (event) {
+        const formId = $(this).attr('id');
+
+        if (formId !== 'login-form' && formId !== 'register-form') return;
+        event.preventDefault();
+
+        let formData = {};
+        $(this)
+            .find('input')
+            .each(function () {
+                const inputName = $(this).attr('name');
+                const inputValue = $(this).val();
+                formData[inputName] = inputValue;
+            });
+
+        const URL = $(this).attr('action');
+        const METHOD = $(this).attr('method') || 'POST';
+
+        $.ajax({
+            url: URL,
+            type: METHOD,
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function (response) {
+                console.log(
+                    `${formId}: ${response.code} -> ${response.message}`,
+                );
+                alert(response.message || 'Request Successful');
+            },
+            error: function (xhr, status, error) {
+                console.log(
+                    `${formId}: ${status} -> ${JSON.stringify(xhr.responseJSON?.error, null, 4)}`,
+                );
+                alert(error || 'An Error Occurred.');
+            },
+        });
+    });
+
     $('#search-input').on('click', function (event) {
         if (event.isDefaultPrevented()) return;
 

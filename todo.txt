@@ -1,0 +1,11 @@
+- fix search bar
+- dark mode default
+- use ui components
+- add animations
+ - hover
+ - fade in/out
+
+ - error pages
+
+- move to gulp
+- HTML VALIDATOR

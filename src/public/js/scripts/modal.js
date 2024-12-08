@@ -1,6 +1,10 @@
 function showModal(modalId) {
     $('body').addClass('overflow-hidden');
-    $(`#${modalId}`).removeClass('hidden');
+    $(`#${modalId}`)
+        .removeClass('hidden')
+        .find('.modal-content')
+        .removeClass('scale-95 opacity-0')
+        .addClass('scale-100 opacity-100');
 
     if (modalId === 'search-modal') {
         $('#search-section').removeClass('max-w-sm').addClass('max-w-2xl');
@@ -19,7 +23,11 @@ function showModal(modalId) {
 
 function hideModal(modalId) {
     $('body').removeClass('overflow-hidden');
-    $(`#${modalId}`).addClass('hidden');
+    $(`#${modalId}`)
+        .addClass('hidden')
+        .find('.modal-content')
+        .addClass('scale-95 opacity-0')
+        .removeClass('scale-100 opacity-100');
 
     if (modalId === 'search-modal') {
         $('#search-section').addClass('max-w-sm').removeClass('max-w-2xl');

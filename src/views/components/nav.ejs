@@ -71,14 +71,12 @@
 <div id="search-modal" class="modal fixed hidden inset-0 z-40 overflow-y-auto">
     <div class="flex min-h-screen items-start justify-center pt-16 px-4 text-center sm:p-0">
         <div class="modal-backdrop fixed inset-0 bg-gray-500 bg-opacity-75"></div>
-
         <div class="modal-content relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl my-20 sm:w-full sm:max-w-2xl">
             <div class="absolute right-0 top-0 pr-4 pt-4">
                 <button type="button" class="modal-close rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
                     <i data-lucide="x" class="h-6 w-6"></i>
                 </button>
             </div>
-
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
                 <div class="border-b border-gray-200 mb-4">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -89,7 +87,6 @@
                         <% }); %>
                     </nav>
                 </div>
-
                 <div class="content-container max-h-[60vh] overflow-y-auto">
                     <div class="space-y-2" id="search-results">
                     </div>
@@ -101,37 +98,59 @@
 
 <div id="user-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
     <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
-        <div class="modal-backdrop fixed inset-0 bg-gray-500 bg-opacity-75"></div>
-
-        <div class="modal-content relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl sm:my-8 sm:w-full sm:max-w-md">
-            <div class="absolute right-0 top-0 pr-4 pt-4">
-                <button type="button" class="modal-close rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
-            </div>
-
-            <div class="bg-white px-4 pb-4 pt-5 sm:p-6">
-                <div id="login-form">
-                    <h3 class="text-xl font-semibold leading-6 text-gray-900 mb-8">Welcome back</h3>
-                    <form class="space-y-6">
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
-                            <input type="email" id="email" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                            <input type="password" id="password" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                        </div>
-                        <button type="submit" class="w-full flex justify-center py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            Sign in
-                        </button>
-                    </form>
-                    <div class="mt-6 text-center">
-                        <button class="text-sm text-blue-600 hover:text-blue-500" onclick="toggleAuthForm()">
-                            Don't have an account? Sign up
+        <div class="modal-backdrop fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div class="modal-content relative transform overflow-hidden scale-95 opacity-0 rounded-lg bg-white text-left shadow-xl transition-all duration-300 sm:my-8 w-full max-w-lg sm:max-w-md">
+            <div class="bg-white px-6 pb-6 pt-6 sm:p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 id="auth-form-title" class="text-lg font-bold text-gray-900">Welcome Back!</h2>
+                    <button type="button" class="modal-close rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form action="/auth/login" method="POST" class="mt-6" id="login-form">
+                    <div class="mb-4">
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" id="username" name="username" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="john_doe" />
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="password" name="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="••••••••" />
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button type="submit" class="modal-login w-full rounded-md bg-blue-600 py-2 px-4 text-white font-bold hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Login
                         </button>
                     </div>
-                </div>
+                    <p class="mt-2 text-sm text-center text-gray-600">
+                        No Account?
+                        <a href="#" class="auth-form-toggle text-blue-600 hover:underline">Register Here!</a>
+                    </p>
+                </form>
+                <form action="/auth/register" method="POST" class="mt-6 hidden" id="register-form">
+                    <div class="mb-4">
+                        <label for="register-username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" id="register-username" name="username" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="john_doe" />
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="register-password" name="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="••••••••" />
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input type="password" id="register-confirm-password" name="confirmedPassword" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:outline-none" placeholder="••••••••" />
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button type="submit" class="modal-register w-full rounded-md bg-blue-600 py-2 px-4 text-white font-bold hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Register
+                        </button>
+                    </div>
+                    <p class="mt-2 text-sm text-center text-gray-600">
+                        Already Have an Account?
+                        <a href="#" class="auth-form-toggle text-blue-600 hover:underline">Login Here!</a>
+                    </p>
+                </form>
             </div>
         </div>
     </div>

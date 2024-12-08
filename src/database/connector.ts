@@ -4,7 +4,7 @@ const pool = mysql.createPool({
     host: 'localhost',
     user: 'appUser',
     password: 'passWord',
-    database: 'stockTrackerApp',
+    database: 'trade_ticker',
 });
 
 export default pool;

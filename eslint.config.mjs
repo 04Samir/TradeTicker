@@ -19,6 +19,7 @@ export default tseslint.config(
         ...eslintConfigPrettier,
         ...eslintConfigJquery,
         rules: {
+            '@typescript-eslint/no-explicit-any': 'off',
             'padding-line-between-statements': [
                 'error',
                 { blankLine: 'always', prev: 'block', next: '*' },
