@@ -20,7 +20,7 @@ router.get('/', (req: Request, res: Response) => {
     });
 });
 
-router.post('/validate-username', (req: Request, res: Response) => {
+router.post('/validate/username', (req: Request, res: Response) => {
     const { username } = req.body;
 
     if (!username) {
@@ -56,11 +56,7 @@ router.post('/validate-username', (req: Request, res: Response) => {
     return json.respond(res, 200);
 });
 
-router.get('/register', (req: Request, res: Response) => {
-    res.redirect('/auth');
-});
-
-router.post('/validate-password', (req: Request, res: Response) => {
+router.post('/validate/password', (req: Request, res: Response) => {
     const { password } = req.body;
 
     if (!password) {
@@ -120,14 +116,14 @@ router.post('/register', async (req: Request, res: Response) => {
             return json.error(res, 400, 'Passwords do NOT Match');
         }
 
-        const validUsername = await http.post('/auth/validate-username', {
+        const validUsername = await http.post('/auth/validate/username', {
             username,
         });
         if (validUsername.status !== 200) {
             return json.error(res, 400, validUsername.data.error.message);
         }
 
-        const validPassword = await http.post('/auth/validate-password', {
+        const validPassword = await http.post('/auth/validate/password', {
             password,
         });
         if (validPassword.status !== 200) {
@@ -155,10 +151,6 @@ router.post('/register', async (req: Request, res: Response) => {
         console.error('Error in /register:', error);
         return json.error(res, 500);
     }
-});
-
-router.get('/login', (req: Request, res: Response) => {
-    res.redirect('/auth');
 });
 
 router.post('/login', async (req: Request, res: Response) => {
