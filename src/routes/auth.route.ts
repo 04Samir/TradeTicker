@@ -3,7 +3,7 @@ import { Request, Response, Router } from 'express';
 import bcrypt from 'bcrypt';
 
 import { db } from '../database';
-import { http } from '../utils';
+import { local } from '../utils';
 import { json } from '../utils';
 
 const router = Router();
@@ -116,14 +116,14 @@ router.post('/register', async (req: Request, res: Response) => {
             return json.error(res, 400, 'Passwords do NOT Match');
         }
 
-        const validUsername = await http.post('/auth/validate/username', {
+        const validUsername = await local.post('/auth/validate/username', {
             username,
         });
         if (validUsername.status !== 200) {
             return json.error(res, 400, validUsername.data.error.message);
         }
 
-        const validPassword = await http.post('/auth/validate/password', {
+        const validPassword = await local.post('/auth/validate/password', {
             password,
         });
         if (validPassword.status !== 200) {

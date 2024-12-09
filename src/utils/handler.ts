@@ -25,13 +25,17 @@ export const errorHandler = (
     next: NextFunction,
 ) => {
     const statusCode = error.status || 500;
-    const message =
+    let message =
         error.message ||
         json.ERROR_MESSAGES[statusCode]?.message ||
-        'Internal Server Error';
+        json.ERROR_MESSAGES[500].message;
+
+    if (statusCode === 500) {
+        message = json.ERROR_MESSAGES[500].message;
+        console.error(error);
+    }
 
     res.status(statusCode);
-
     res.format({
         json: () => {
             res.type('json');
@@ -42,9 +46,5 @@ export const errorHandler = (
             res.send(`${statusCode} : ${message}`);
         },
     });
-
-    if (statusCode === 500) {
-        console.error(error);
-    }
 };
 /* eslint-enable @typescript-eslint/no-unused-vars */
