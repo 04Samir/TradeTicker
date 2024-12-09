@@ -264,12 +264,37 @@ $(function () {
         const stocks = Object.keys(data[firstTimeframe].bars);
 
         stocks.forEach((stock, index) => {
-            const button = $(`
-            <button class="stock-item px-4 py-2 rounded-md font-medium ${index === 0 ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}" data-stock="${stock}">
-                ${stock}
-            </button>
-        `);
-            marketItemsContainer.append(button);
+            const bars = data['1D'].bars[stock];
+
+            const startBar = bars[0];
+            const latestBar = bars[bars.length - 1];
+
+            const openingPrice = parseFloat(startBar.c);
+            const latestPrice = parseFloat(latestBar.c);
+
+            const percentageChange = openingPrice
+                ? (((latestPrice - openingPrice) / openingPrice) * 100).toFixed(
+                      2,
+                  )
+                : 0;
+
+            const item = `
+                <div class="market-item p-4 border border-gray-200 rounded-md shadow-sm flex flex-col space-y-2 ${
+                    index === 0 ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'
+                } cursor-pointer text-gray-800" data-stock="${stock}">
+                    <div class="text-xl font-semibold">${stock}</div>
+                    <div class="text-sm flex justify-between">
+                        <span>$${latestPrice} USD</span>
+                        <span class="${
+                            percentageChange > 0
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                        } font-medium">${percentageChange > 0 ? '+' : ''}${percentageChange}%</span>
+                    </div>
+                </div>
+            `;
+
+            marketItemsContainer.append(item);
         });
     }
 
@@ -313,11 +338,12 @@ $(function () {
 
     $('.category-tab').on('click', function () {
         $('.category-tab')
-            .removeClass('bg-blue-100 text-blue-600')
-            .addClass('text-gray-600 hover:bg-gray-100');
+            .removeClass('border-b-2 border-blue-600 text-blue-600')
+            .addClass('text-gray-600 hover:text-gray-800');
+
         $(this)
-            .addClass('bg-blue-100 text-blue-600')
-            .removeClass('text-gray-600 hover:bg-gray-100');
+            .addClass('border-b-2 border-blue-600 text-blue-600')
+            .removeClass('text-gray-600 hover:text-gray-800');
 
         currentCategory = $(this).data('category');
 
@@ -325,20 +351,27 @@ $(function () {
         updateChart(currentCategory, currentTimeframe, firstStock);
     });
 
-    $(document).on('click', '.stock-item', function () {
-        $('.stock-item')
-            .removeClass('bg-blue-100 text-blue-600')
-            .addClass('text-gray-600 hover:bg-gray-100');
-        $(this)
-            .addClass('bg-blue-100 text-blue-600')
-            .removeClass('text-gray-600 hover:bg-gray-100');
-
+    $(document).on('click', '.market-item', function () {
         const selectedStock = $(this).data('stock');
-        updateChart(
-            'Stocks',
-            $('.timeframe-button.bg-blue-100').data('timeframe'),
-            selectedStock,
+        const selectedTimeframe = $('.timeframe-button.bg-blue-100').data(
+            'timeframe',
         );
+
+        if (
+            $(this).hasClass('bg-blue-100') &&
+            selectedTimeframe === currentTimeframe
+        )
+            return;
+
+        $('.market-item')
+            .removeClass('bg-blue-100')
+            .addClass('bg-white hover:bg-gray-100');
+
+        $(this)
+            .addClass('bg-blue-100')
+            .removeClass('bg-white hover:bg-gray-100');
+
+        updateChart(currentCategory, selectedTimeframe, selectedStock);
     });
 
     $('.timeframe-button').on('click', function () {
@@ -350,7 +383,7 @@ $(function () {
             .removeClass('text-gray-600 hover:bg-gray-100');
 
         currentTimeframe = $(this).data('timeframe');
-        const selectedStock = $('.stock-item.bg-blue-100').data('stock');
+        const selectedStock = $('.market-item.bg-blue-100').data('stock');
         updateChart(currentCategory, currentTimeframe, selectedStock);
     });
 });
