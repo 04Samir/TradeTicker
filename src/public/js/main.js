@@ -160,6 +160,10 @@ $(function () {
 
         const timeUnit = getTimeUnit(timeframe);
 
+        const firstPrice = parsedData.prices[0];
+        const lastPrice = parsedData.prices[parsedData.prices.length - 1];
+        const isPriceUp = lastPrice > firstPrice;
+
         marketChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -167,11 +171,15 @@ $(function () {
                 datasets: [
                     {
                         data: parsedData.prices,
-                        borderColor: '#FF3B30',
-                        backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                        borderColor: isPriceUp ? '#4CAF50' : '#FF3B30',
+                        backgroundColor: isPriceUp
+                            ? 'rgba(76, 175, 80, 0.1)'
+                            : 'rgba(255, 59, 48, 0.1)',
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.3,
+                        tension: 0,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
                     },
                 ],
             },
@@ -180,10 +188,11 @@ $(function () {
                 maintainAspectRatio: false,
                 scales: {
                     x: {
-                        type: 'time',
+                        type: 'timeseries',
                         time: {
                             unit: timeUnit,
                             displayFormats: {
+                                minute: 'HH:mm',
                                 hour: 'HH:mm',
                                 day: 'MMM d',
                                 week: 'MMM d',
@@ -193,15 +202,64 @@ $(function () {
                         },
                         grid: { display: false },
                         ticks: {
-                            align: 'start',
-                            source: 'data',
+                            source: 'auto',
                             autoSkip: true,
                             maxRotation: 0,
+                            minRotation: 0,
+                            callback: (value) => {
+                                const labelFormats = {
+                                    '1D': 'HH:mm',
+                                    '1W': 'ddd',
+                                    '1M': 'D MMM',
+                                    '6M': 'MMM YYYY',
+                                    '1Y': 'MMM YYYY',
+                                    '5Y': 'YYYY',
+                                };
+
+                                const timeframe = currentTimeframe;
+                                const format =
+                                    labelFormats[timeframe] || 'D MMM';
+
+                                const date = new Date(value);
+                                const options = {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    weekday: 'short',
+                                };
+
+                                switch (format) {
+                                    case 'HH:mm':
+                                        return date.toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        });
+                                    case 'ddd':
+                                        return date.toLocaleDateString([], {
+                                            weekday: 'short',
+                                        });
+                                    case 'D MMM':
+                                        return date.toLocaleDateString([], {
+                                            day: '2-digit',
+                                            month: 'short',
+                                        });
+                                    case 'MMM YYYY':
+                                        return date.toLocaleDateString([], {
+                                            month: 'short',
+                                            year: 'numeric',
+                                        });
+                                    case 'YYYY':
+                                        return date.getFullYear();
+                                    default:
+                                        return date.toLocaleDateString(
+                                            [],
+                                            options,
+                                        );
+                                }
+                            },
                         },
-                        min: parsedData.labels[0] || null,
-                        max:
-                            parsedData.labels[parsedData.labels.length - 1] ||
-                            null,
                     },
                     y: {
                         position: 'right',
@@ -213,9 +271,31 @@ $(function () {
                 },
                 plugins: {
                     legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                    },
                 },
             },
         });
+    }
+
+    function getTimeUnit(timeframe) {
+        switch (timeframe) {
+            case '1D':
+                return 'minute';
+            case '1W':
+                return 'hour';
+            case '1M':
+                return 'day';
+            case '6M':
+                return 'day';
+            case '1Y':
+                return 'day';
+            case '5Y':
+                return 'week';
+            default:
+                return 'day';
+        }
     }
 
     function parseChartData(bars) {
@@ -223,37 +303,6 @@ $(function () {
         const prices = bars.map((bar) => bar.c);
 
         return { labels, prices };
-    }
-
-    function getTimeUnit(timeframe) {
-        switch (timeframe) {
-            case '1D':
-                return 'hour';
-            case '1W':
-                return 'day';
-            case '1M':
-                return 'week';
-            case '6M':
-            case '1Y':
-                return 'month';
-            case '5Y':
-                return 'year';
-            default:
-                return 'day';
-        }
-    }
-
-    function getFallbackTimeframe(currentTimeframe) {
-        const fallbackOrder = {
-            '5Y': '1Y',
-            '1Y': '6M',
-            '6M': '1M',
-            '1M': '1W',
-            '1W': '1D',
-            '1D': '1D',
-        };
-
-        return fallbackOrder[currentTimeframe];
     }
 
     function populateMarketItems(data) {
@@ -279,20 +328,18 @@ $(function () {
                 : 0;
 
             const item = `
-                <div class="market-item p-4 border border-gray-200 rounded-md shadow-sm flex flex-col space-y-2 ${
-                    index === 0 ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'
-                } cursor-pointer text-gray-800" data-stock="${stock}">
-                    <div class="text-xl font-semibold">${stock}</div>
-                    <div class="text-sm flex justify-between">
-                        <span>$${latestPrice} USD</span>
-                        <span class="${
-                            percentageChange > 0
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                        } font-medium">${percentageChange > 0 ? '+' : ''}${percentageChange}%</span>
-                    </div>
+            <div class="market-item p-4 border border-gray-200 rounded-md shadow-sm flex flex-col space-y-2 ${
+                index === 0 ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'
+            } cursor-pointer text-gray-800" data-stock="${stock}">
+                <div class="text-xl font-semibold">${stock}</div>
+                <div class="text-sm flex justify-between">
+                    <span>$${latestPrice} USD</span>
+                    <span class="${
+                        percentageChange > 0 ? 'text-green-600' : 'text-red-600'
+                    } font-medium">${percentageChange > 0 ? '+' : ''}${percentageChange}%</span>
                 </div>
-            `;
+            </div>
+        `;
 
             marketItemsContainer.append(item);
         });
@@ -304,13 +351,8 @@ $(function () {
             const stockBars = categoryData?.bars[stock];
 
             if (!stockBars || stockBars.length < 3) {
-                const fallbackTimeframe = getFallbackTimeframe(timeframe);
-
-                if (fallbackTimeframe === timeframe) {
-                    initialiseChart([], timeframe);
-                    return;
-                }
-                return updateChart(category, fallbackTimeframe, stock);
+                initialiseChart([], timeframe);
+                return;
             }
 
             initialiseChart(stockBars, timeframe);
