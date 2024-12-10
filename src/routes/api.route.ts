@@ -13,17 +13,17 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
         function calculateInterval(timeframe: string): string {
             switch (timeframe) {
                 case '1D':
-                    return '1H';
+                    return '1T';
                 case '1W':
-                    return '1D';
+                    return '1H';
                 case '1M':
-                    return '1W';
+                    return '1D';
                 case '6M':
-                    return '1M';
+                    return '1D';
                 case '1Y':
-                    return '1M';
+                    return '1D';
                 case '5Y':
-                    return '12M';
+                    return '1W';
                 default:
                     throw new Error(`Unsupported Timeframe (!?): ${timeframe}`);
             }
@@ -50,7 +50,6 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
                 case '1D':
                     startDate = new Date(endDate);
                     startDate.setHours(0, 0, 0, 0);
-                    startDate = adjustToWeekday(startDate);
                     break;
                 case '1W':
                     startDate = new Date(endDate);
@@ -123,6 +122,7 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
                     feed: 'iex',
                 },
             });
+
             if (symbolData.status !== 200) {
                 const error: HTTPError = new Error(
                     JSON.stringify(symbolData.data || symbolData.statusText),

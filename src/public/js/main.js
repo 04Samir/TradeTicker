@@ -164,6 +164,8 @@ $(function () {
         const lastPrice = parsedData.prices[parsedData.prices.length - 1];
         const isPriceUp = lastPrice > firstPrice;
 
+        let lastFormattedLabel = '';
+
         marketChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -206,58 +208,72 @@ $(function () {
                             autoSkip: true,
                             maxRotation: 0,
                             minRotation: 0,
-                            callback: (value) => {
-                                const labelFormats = {
-                                    '1D': 'HH:mm',
-                                    '1W': 'ddd',
-                                    '1M': 'D MMM',
-                                    '6M': 'MMM YYYY',
-                                    '1Y': 'MMM YYYY',
-                                    '5Y': 'YYYY',
-                                };
-
-                                const timeframe = currentTimeframe;
-                                const format =
-                                    labelFormats[timeframe] || 'D MMM';
-
+                            callback: function (value) {
                                 const date = new Date(value);
-                                const options = {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric',
-                                    weekday: 'short',
-                                };
+                                let formattedLabel;
 
-                                switch (format) {
-                                    case 'HH:mm':
-                                        return date.toLocaleTimeString([], {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        });
-                                    case 'ddd':
-                                        return date.toLocaleDateString([], {
-                                            weekday: 'short',
-                                        });
-                                    case 'D MMM':
-                                        return date.toLocaleDateString([], {
-                                            day: '2-digit',
-                                            month: 'short',
-                                        });
-                                    case 'MMM YYYY':
-                                        return date.toLocaleDateString([], {
-                                            month: 'short',
-                                            year: 'numeric',
-                                        });
-                                    case 'YYYY':
-                                        return date.getFullYear();
-                                    default:
-                                        return date.toLocaleDateString(
-                                            [],
-                                            options,
-                                        );
+                                switch (timeframe) {
+                                    case '1D': {
+                                        const minutes = date.getMinutes();
+                                        if (minutes % 30 === 0) {
+                                            formattedLabel =
+                                                date.toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                });
+                                        }
+                                        break;
+                                    }
+                                    case '1W': {
+                                        formattedLabel =
+                                            date.toLocaleDateString([], {
+                                                weekday: 'short',
+                                            });
+                                        break;
+                                    }
+                                    case '1M': {
+                                        formattedLabel =
+                                            date.toLocaleDateString([], {
+                                                day: 'numeric',
+                                                month: 'short',
+                                            });
+                                        break;
+                                    }
+                                    case '6M':
+                                        formattedLabel =
+                                            date.toLocaleDateString([], {
+                                                month: 'short',
+                                                year: 'numeric',
+                                            });
+                                        break;
+                                    case '1Y': {
+                                        formattedLabel =
+                                            date.toLocaleDateString([], {
+                                                month: 'short',
+                                                year: 'numeric',
+                                            });
+                                        break;
+                                    }
+                                    case '5Y': {
+                                        formattedLabel =
+                                            date.toLocaleDateString([], {
+                                                year: 'numeric',
+                                            });
+                                        break;
+                                    }
+                                    default: {
+                                        formattedLabel =
+                                            date.toLocaleDateString();
+                                        break;
+                                    }
                                 }
+
+                                if (formattedLabel === lastFormattedLabel) {
+                                    return null;
+                                }
+
+                                lastFormattedLabel = formattedLabel;
+                                return formattedLabel;
                             },
                         },
                     },
