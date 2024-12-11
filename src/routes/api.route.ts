@@ -7,161 +7,221 @@ const router = Router();
 router.get('/markets/:type/movers', async (req: Request, res: Response) => {
     const { type } = req.params;
 
-    if (type.toLowerCase() === 'stocks') {
-        const timeframes = ['1D', '1W', '1M', '6M', '1Y', '5Y'];
+    const timeframes = ['1D', '1W', '1M', '6M', '1Y', '5Y'];
 
-        function calculateInterval(timeframe: string): string {
-            switch (timeframe) {
-                case '1D':
-                    return '1T';
-                case '1W':
-                    return '30T';
-                case '1M':
-                    return '1D';
-                case '6M':
-                    return '1D';
-                case '1Y':
-                    return '1D';
-                case '5Y':
-                    return '1W';
-                default:
-                    throw new Error(`Unsupported Timeframe (!?): ${timeframe}`);
-            }
+    function calculateInterval(timeframe: string): string {
+        switch (timeframe) {
+            case '1D':
+                return '1T';
+            case '1W':
+                return '30T';
+            case '1M':
+                return '1D';
+            case '6M':
+                return '1D';
+            case '1Y':
+                return '1D';
+            case '5Y':
+                return '1W';
+            default:
+                throw new Error(`Unsupported Timeframe (!?): ${timeframe}`);
+        }
+    }
+
+    function adjustToWeekday(date: Date): Date {
+        const day = date.getDay();
+        if (day === 0) {
+            date.setDate(date.getDate() - 2);
+        } else if (day === 6) {
+            date.setDate(date.getDate() - 1);
+        }
+        return date;
+    }
+
+    function calculateDate(
+        timeframe: string,
+        end: string,
+        onlyWeekdays: boolean,
+    ): { start: string; end: string } {
+        let endDate = new Date(end);
+        let startDate: Date;
+
+        if (onlyWeekdays) {
+            endDate = adjustToWeekday(endDate);
         }
 
-        function adjustToWeekday(date: Date): Date {
-            const day = date.getDay();
-            if (day === 0) {
-                date.setDate(date.getDate() - 2);
-            } else if (day === 6) {
-                date.setDate(date.getDate() - 1);
-            }
-            return date;
-        }
-
-        function calculateDate(
-            timeframe: string,
-            end: string,
-        ): { start: string; end: string } {
-            const endDate = adjustToWeekday(new Date(end));
-            let startDate: Date;
-
-            switch (timeframe) {
-                case '1D':
+        switch (timeframe) {
+            case '1D':
+                startDate = new Date(endDate);
+                startDate.setDate(startDate.getDate() - 1);
+                if (onlyWeekdays) {
+                    startDate = adjustToWeekday(startDate);
+                }
+                break;
+            case '1W':
+                startDate = new Date(endDate);
+                if (endDate.getHours() >= 18) {
                     startDate = new Date(endDate);
+                    startDate.setDate(endDate.getDate() - 7 + 1);
                     startDate.setHours(0, 0, 0, 0);
-                    break;
-                case '1W':
-                    startDate = new Date(endDate);
+                } else {
                     startDate.setDate(startDate.getDate() - 7);
-                    break;
-                case '1M':
-                    startDate = new Date(endDate);
-                    startDate.setMonth(startDate.getMonth() - 1);
-                    break;
-                case '6M':
-                    startDate = new Date(endDate);
-                    startDate.setMonth(startDate.getMonth() - 6);
-                    break;
-                case '1Y':
-                    startDate = new Date(endDate);
+                }
+                break;
+            case '1M':
+                startDate = new Date(endDate);
+                startDate.setMonth(startDate.getMonth() - 1);
+                break;
+            case '6M':
+                startDate = new Date(endDate);
+                startDate.setMonth(startDate.getMonth() - 6);
+                break;
+            case '1Y':
+                startDate = new Date(endDate);
+                if (endDate.getMonth() === 11) {
                     startDate.setFullYear(startDate.getFullYear() - 1);
-                    break;
-                case '5Y':
-                    startDate = new Date(endDate);
+                    startDate.setMonth(0);
+                } else {
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                }
+                break;
+            case '5Y':
+                startDate = new Date(endDate);
+                if (endDate.getMonth() === 11) {
                     startDate.setFullYear(startDate.getFullYear() - 5);
-                    break;
-                default:
-                    throw new Error(`Unsupported Timeframe (!?): ${timeframe}`);
-            }
-
-            return {
-                start: startDate.toISOString().split('T')[0],
-                end: endDate.toISOString().split('T')[0],
-            };
+                    startDate.setMonth(0);
+                } else {
+                    startDate.setFullYear(startDate.getFullYear() - 5);
+                }
+                break;
+            default:
+                throw new Error(`Unsupported Timeframe (!?): ${timeframe}`);
         }
 
-        const activeStocks = await markets.get(
-            '/v1beta1/screener/stocks/most-actives',
-            {
-                params: {
-                    by: 'trades',
-                    top: 3,
-                },
-            },
-        );
-        if (activeStocks.status !== 200) {
+        return {
+            start: startDate.toISOString(),
+            end: endDate.toISOString(),
+        };
+    }
+
+    async function fetchData(url: string, params: any): Promise<any> {
+        const response = await markets.get(url, { params: params });
+
+        if (response.status !== 200) {
             const error: HTTPError = new Error(
-                JSON.stringify(activeStocks.data || activeStocks.statusText),
+                JSON.stringify(response.data || response.statusText),
             );
             error.status = 500;
             throw error;
         }
 
-        const stockSymbols = activeStocks.data.most_actives.map(
-            (stock: any) => stock.symbol,
-        );
-
-        const stockEndDate = new Date(activeStocks.data.last_updated)
-            .toISOString()
-            .split('T')[0];
-
-        async function fetchStockDataForTimeframe(
-            timeframe: string,
-            stockSymbols: string[],
-            endDate: string,
-        ) {
-            const { start, end } = calculateDate(timeframe, endDate);
-            const symbolData = await markets.get('/v2/stocks/bars', {
-                params: {
-                    symbols: stockSymbols.join(','),
-                    timeframe: calculateInterval(timeframe),
-                    start: start,
-                    end: end,
-                    limit: 10000,
-                    feed: 'iex',
-                },
+        if (response.data.next_page_token != null) {
+            const next = await fetchData(url, {
+                ...params,
+                page_token: response.data.next_page_token,
             });
 
-            if (symbolData.status !== 200) {
-                const error: HTTPError = new Error(
-                    JSON.stringify(symbolData.data || symbolData.statusText),
-                );
-                error.status = 500;
-                throw error;
-            } else {
+            for (const key in next) {
                 if (
-                    Object.keys(symbolData.data.bars).length === 0 &&
-                    timeframe === '1D'
+                    Array.isArray(response.data[key]) &&
+                    Array.isArray(next[key])
                 ) {
-                    const previousDay = new Date(end);
-                    previousDay.setDate(previousDay.getDate() - 1);
-
-                    return fetchStockDataForTimeframe(
-                        timeframe,
-                        stockSymbols,
-                        previousDay.toISOString().split('T')[0],
-                    );
+                    response.data[key] = [...response.data[key], ...next[key]];
+                } else if (
+                    typeof response.data[key] === 'object' &&
+                    typeof next[key] === 'object'
+                ) {
+                    response.data[key] = {
+                        ...response.data[key],
+                        ...next[key],
+                    };
                 } else {
-                    return symbolData.data;
+                    response.data[key] = next[key];
                 }
             }
         }
+        delete response.data.next_page_token;
+        return response.data;
+    }
+
+    if (type.toLowerCase() === 'stocks') {
+        const activeStocks = await fetchData(
+            '/v1beta1/screener/stocks/most-actives',
+            { by: 'trades', top: 3 },
+        );
+
+        const stockSymbols = activeStocks.most_actives.map(
+            (stock: any) => stock.symbol,
+        );
+        const stockEndDate = new Date(activeStocks.last_updated).toISOString();
 
         const stockData: { [key: string]: any } = {};
         for (const timeframe of timeframes) {
-            stockData[timeframe] = await fetchStockDataForTimeframe(
-                timeframe,
-                stockSymbols,
-                stockEndDate,
-            );
+            const { start, end } = calculateDate(timeframe, stockEndDate, true);
+            const symbolData = await fetchData('/v2/stocks/bars', {
+                symbols: stockSymbols.join(','),
+                timeframe: calculateInterval(timeframe),
+                start: start,
+                end: end,
+                limit: 10000,
+                feed: 'iex',
+            });
+
+            if (
+                Object.keys(symbolData.bars).length === 0 &&
+                timeframe === '1D'
+            ) {
+                const previousDay = new Date(end);
+                previousDay.setDate(previousDay.getDate() - 1);
+
+                const previousDayData = await fetchData('/v2/stocks/bars', {
+                    symbols: stockSymbols.join(','),
+                    timeframe: calculateInterval(timeframe),
+                    start: calculateDate(
+                        timeframe,
+                        previousDay.toISOString(),
+                        true,
+                    ).start,
+                    end: previousDay.toISOString(),
+                    limit: 10000,
+                    feed: 'iex',
+                });
+
+                stockData[timeframe] = previousDayData;
+            } else {
+                stockData[timeframe] = symbolData;
+            }
         }
 
         return json.respond(res, 200, {
             data: stockData,
         });
-    } else if (type.toLowerCase() === 'cryptos') {
-        return json.error(res, 500, 'Not Implemented');
+    } else if (type.toLowerCase() === 'crypto') {
+        const cryptoSymbols = ['BTC/USD', 'ETH/USD', 'DOGE/USD'];
+        const cryptoEndDate = new Date(new Date().toUTCString()).toISOString();
+
+        const cryptoData: { [key: string]: any } = {};
+        for (const timeframe of timeframes) {
+            const { start, end } = calculateDate(
+                timeframe,
+                cryptoEndDate,
+                false,
+            );
+
+            const symbolData = await fetchData('/v1beta3/crypto/us/bars', {
+                symbols: cryptoSymbols.join(','),
+                timeframe: calculateInterval(timeframe),
+                start: start,
+                end: end,
+                limit: 10000,
+            });
+
+            cryptoData[timeframe] = symbolData;
+        }
+
+        return json.respond(res, 200, {
+            data: cryptoData,
+        });
     } else {
         return json.error(res, 400, 'Invalid Market Type');
     }
