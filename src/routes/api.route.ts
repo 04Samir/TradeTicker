@@ -130,7 +130,21 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
                 error.status = 500;
                 throw error;
             } else {
-                return symbolData.data;
+                if (
+                    Object.keys(symbolData.data.bars).length === 0 &&
+                    timeframe === '1D'
+                ) {
+                    const previousDay = new Date(end);
+                    previousDay.setDate(previousDay.getDate() - 1);
+
+                    return fetchStockDataForTimeframe(
+                        timeframe,
+                        stockSymbols,
+                        previousDay.toISOString().split('T')[0],
+                    );
+                } else {
+                    return symbolData.data;
+                }
             }
         }
 
