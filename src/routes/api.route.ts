@@ -15,7 +15,7 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
                 case '1D':
                     return '1T';
                 case '1W':
-                    return '1H';
+                    return '30T';
                 case '1M':
                     return '1D';
                 case '6M':

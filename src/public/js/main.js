@@ -147,6 +147,7 @@ $(function () {
     let marketChart;
     let currentCategory = $('.category-tab.text-blue-600').data('category');
     let currentTimeframe = $('.timeframe-button.bg-blue-100').data('timeframe');
+    let marketItemOrder = [];
 
     const data = fetchMarketData();
 
@@ -321,15 +322,18 @@ $(function () {
         return { labels, prices };
     }
 
-    function populateMarketItems(data) {
+    function populateMarketItems(data, timeframe) {
         const marketItemsContainer = $('#market-items');
         marketItemsContainer.empty();
 
-        const firstTimeframe = Object.keys(data)[0];
-        const stocks = Object.keys(data[firstTimeframe].bars);
+        const stocks = Object.keys(data[timeframe].bars).sort();
 
-        stocks.forEach((stock, index) => {
-            const bars = data['1D'].bars[stock];
+        if (marketItemOrder.length === 0) {
+            marketItemOrder = stocks;
+        }
+
+        marketItemOrder.forEach((stock, index) => {
+            const bars = data[timeframe].bars[stock];
 
             const startBar = bars[0];
             const latestBar = bars[bars.length - 1];
@@ -337,9 +341,13 @@ $(function () {
             const openingPrice = parseFloat(startBar.c);
             const latestPrice = parseFloat(latestBar.c);
 
+            const valueChange = (latestPrice - openingPrice).toFixed(2);
             const percentageChange = openingPrice
-                ? (((latestPrice - openingPrice) / openingPrice) * 100).toFixed(
-                      2,
+                ? Math.abs(
+                      (
+                          ((latestPrice - openingPrice) / openingPrice) *
+                          100
+                      ).toFixed(2),
                   )
                 : 0;
 
@@ -349,16 +357,21 @@ $(function () {
             } cursor-pointer text-gray-800" data-stock="${stock}">
                 <div class="text-xl font-semibold">${stock}</div>
                 <div class="text-sm flex justify-between">
-                    <span>$${latestPrice} USD</span>
+                    <span>$${latestPrice.toFixed(2)} USD</span>
                     <span class="${
-                        percentageChange > 0 ? 'text-green-600' : 'text-red-600'
-                    } font-medium">${percentageChange > 0 ? '+' : ''}${percentageChange}%</span>
+                        valueChange > 0 ? 'text-green-600' : 'text-red-600'
+                    } font-medium">${valueChange > 0 ? '+' : ''}${valueChange} (${percentageChange}%)</span>
                 </div>
             </div>
         `;
 
             marketItemsContainer.append(item);
         });
+
+        $('.market-item')
+            .first()
+            .addClass('bg-blue-100')
+            .removeClass('bg-white hover:bg-gray-100');
     }
 
     function updateChart(category, timeframe, stock) {
@@ -372,6 +385,13 @@ $(function () {
             }
 
             initialiseChart(stockBars, timeframe);
+
+            $('.market-item')
+                .removeClass('bg-blue-100')
+                .addClass('bg-white hover:bg-gray-100');
+            $(`.market-item[data-stock="${stock}"]`)
+                .addClass('bg-blue-100')
+                .removeClass('bg-white hover:bg-gray-100');
         } catch (error) {
             console.error('Error updating chart data:', error);
         }
@@ -391,7 +411,7 @@ $(function () {
     const firstTimeframe = Object.keys(data)[0];
     const firstStock = Object.keys(data[firstTimeframe].bars)[0];
 
-    populateMarketItems(data);
+    populateMarketItems(data, currentTimeframe);
     updateChart(currentCategory, currentTimeframe, firstStock);
 
     $('.category-tab').on('click', function () {
@@ -442,6 +462,8 @@ $(function () {
 
         currentTimeframe = $(this).data('timeframe');
         const selectedStock = $('.market-item.bg-blue-100').data('stock');
+
+        populateMarketItems(data, currentTimeframe);
         updateChart(currentCategory, currentTimeframe, selectedStock);
     });
 });
