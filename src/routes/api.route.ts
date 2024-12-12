@@ -44,7 +44,7 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
         onlyWeekdays: boolean,
     ): { start: string; end: string } {
         let endDate = new Date(end);
-        let startDate: Date;
+        let startDate = new Date(endDate);
 
         if (onlyWeekdays) {
             endDate = adjustToWeekday(endDate);
@@ -52,16 +52,13 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
 
         switch (timeframe) {
             case '1D':
-                startDate = new Date(endDate);
                 startDate.setDate(startDate.getDate() - 1);
                 if (onlyWeekdays) {
                     startDate = adjustToWeekday(startDate);
                 }
                 break;
             case '1W':
-                startDate = new Date(endDate);
                 if (endDate.getHours() >= 18) {
-                    startDate = new Date(endDate);
                     startDate.setDate(endDate.getDate() - 7 + 1);
                     startDate.setHours(0, 0, 0, 0);
                 } else {
@@ -69,15 +66,12 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
                 }
                 break;
             case '1M':
-                startDate = new Date(endDate);
                 startDate.setMonth(startDate.getMonth() - 1);
                 break;
             case '6M':
-                startDate = new Date(endDate);
                 startDate.setMonth(startDate.getMonth() - 6);
                 break;
             case '1Y':
-                startDate = new Date(endDate);
                 if (endDate.getMonth() === 11) {
                     startDate.setFullYear(startDate.getFullYear() - 1);
                     startDate.setMonth(0);
@@ -86,7 +80,6 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
                 }
                 break;
             case '5Y':
-                startDate = new Date(endDate);
                 if (endDate.getMonth() === 11) {
                     startDate.setFullYear(startDate.getFullYear() - 5);
                     startDate.setMonth(0);

@@ -2,12 +2,7 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
         <h2 class="text-2xl font-semibold text-gray-900 mb-6">Market Overview</h2>
         <div class="mb-8">
-            <div class="flex justify-start space-x-4 border-b border-gray-300">
-                <% ['Stocks', 'Crypto'].forEach((category, index) => { %>
-                <div class="category-tab pb-2 px-4 text-base font-medium cursor-pointer <%= index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800' %>" data-category="<%= category %>">
-                    <%= category %>
-                </div>
-                <% }); %>
+            <div id="market-categories" class="flex justify-start space-x-4 border-b border-gray-300">
             </div>
         </div>
         <div id="market-items" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
@@ -15,14 +10,9 @@
             <canvas id="market-chart"></canvas>
         </div>
         <div class="flex justify-between items-center">
-            <div class="flex space-x-2">
-                <% ['1D', '1W', '1M', '6M', '1Y', '5Y'].forEach((timeframe, index) => { %>
-                <button class="timeframe-button px-3 py-1 rounded-md text-sm font-medium <%= index === 0 ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100' %>" data-timeframe="<%= timeframe %>">
-                    <%= timeframe %>
-                </button>
-                <% }); %>
+            <div id="market-timeframes" class="flex space-x-2">
             </div>
-            <button id="chart-type-toggle" class="p-2 rounded-md text-gray-600 hover:bg-gray-100">
+            <button id="market-chart-type-toggle" class="p-2 rounded-md text-gray-600 hover:bg-gray-100">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
                 </svg>

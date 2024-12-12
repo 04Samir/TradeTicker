@@ -145,17 +145,114 @@ $(function () {
     });
 
     let marketChart;
-    let currentCategory = $('.category-tab.text-blue-600').data('category');
-    let currentTimeframe = $('.timeframe-button.bg-blue-100').data('timeframe');
+    let currentCategory;
+    let currentTimeframe;
     let marketItemOrder = [];
 
-    const stockData = fetchMarketData('stocks');
-    const cryptoData = fetchMarketData('crypto');
+    const marketData = {};
+    const marketTypes = ['stocks', 'crypto'];
 
-    function getCurrentCategoryData() {
-        return currentCategory.toLowerCase() === 'stocks'
-            ? stockData
-            : cryptoData;
+    marketTypes.forEach((type) => {
+        marketData[type] = fetchMarketData(type);
+    });
+
+    function populateDynamicContent() {
+        const categoriesContainer = $('#market-categories');
+        categoriesContainer.empty();
+        marketTypes.forEach((type, index) => {
+            const categoryHTML = `
+            <div class="category-tab pb-2 px-4 text-base font-medium cursor-pointer ${index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800'}" data-category="${type}">
+                ${type.charAt(0).toUpperCase() + type.slice(1)}
+            </div>`;
+            categoriesContainer.append(categoryHTML);
+        });
+
+        currentCategory = marketTypes[0];
+        populateTimeframes(marketData[currentCategory]);
+    }
+
+    function populateTimeframes(categoryData) {
+        const timeframesContainer = $('#market-timeframes');
+        timeframesContainer.empty();
+
+        const timeframes = Object.keys(categoryData || {});
+        timeframes.forEach((frame, index) => {
+            const timeframeHTML = `
+                <button class="timeframe-button px-3 py-1 rounded-md text-sm font-medium ${
+                    index === 0
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-100'
+                }" data-timeframe="${frame}">
+                    ${frame}
+                </button>
+            `;
+            timeframesContainer.append(timeframeHTML);
+        });
+
+        currentTimeframe = timeframes[0];
+    }
+
+    function populateMarketItems(data, timeframe) {
+        const marketItemsContainer = $('#market-items');
+        marketItemsContainer.empty();
+
+        const items = Object.keys(data[timeframe]?.bars || {}).sort();
+
+        if (
+            marketItemOrder.length === 0 ||
+            currentCategory.toLowerCase() === 'crypto'
+        ) {
+            marketItemOrder = items;
+        }
+
+        marketItemOrder.forEach((item, index) => {
+            const bars = data[timeframe]?.bars[item];
+            if (!bars) return;
+
+            const startBar = bars[0];
+            const latestBar = bars[bars.length - 1];
+
+            const openingPrice = parseFloat(startBar.c);
+            const latestPrice = parseFloat(latestBar.c);
+
+            const valueChange = (latestPrice - openingPrice).toFixed(2);
+            const percentageChange = openingPrice
+                ? (((latestPrice - openingPrice) / openingPrice) * 100).toFixed(
+                      2,
+                  )
+                : 0;
+
+            const priceLabel = latestPrice
+                .toFixed(2)
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const valueLabel = valueChange.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ',',
+            );
+            const percentageLabel = percentageChange.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ',',
+            );
+
+            const itemHTML = `
+                <div class="market-item p-4 border border-gray-200 rounded-md shadow-sm flex flex-col space-y-2 ${index === 0 ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'} cursor-pointer text-gray-800" data-item="${item}">
+                    <div class="text-xl font-semibold">${item}</div>
+                    <div class="text-sm flex justify-between">
+                        <span>$${priceLabel} USD</span>
+                        <span class="${valueChange > 0 ? 'text-green-600' : 'text-red-600'} font-medium">
+                            ${valueChange > 0 ? '+' : ''}${valueLabel} (${percentageLabel}%)
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            marketItemsContainer.append(itemHTML);
+        });
+
+        $('.market-item')
+            .first()
+            .addClass('bg-blue-100')
+            .removeClass('bg-white hover:bg-gray-100');
     }
 
     function initialiseChart(data, timeframe) {
@@ -328,79 +425,14 @@ $(function () {
         return { labels, prices };
     }
 
-    function populateMarketItems(data, timeframe) {
-        const marketItemsContainer = $('#market-items');
-        marketItemsContainer.empty();
-
-        const items = Object.keys(data[timeframe]?.bars || {}).sort();
-
-        if (
-            marketItemOrder.length === 0 ||
-            currentCategory.toLowerCase() === 'crypto'
-        ) {
-            marketItemOrder = items;
-        }
-
-        marketItemOrder.forEach((item, index) => {
-            const bars = data[timeframe]?.bars[item];
-            if (!bars) return;
-
-            const startBar = bars[0];
-            const latestBar = bars[bars.length - 1];
-
-            const openingPrice = parseFloat(startBar.c);
-            const latestPrice = parseFloat(latestBar.c);
-
-            const valueChange = (latestPrice - openingPrice).toFixed(2);
-            const percentageChange = openingPrice
-                ? (((latestPrice - openingPrice) / openingPrice) * 100).toFixed(
-                      2,
-                  )
-                : 0;
-
-            const priceLabel = latestPrice
-                .toFixed(2)
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            const valueLabel = valueChange.replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                ',',
-            );
-            const percentageLabel = percentageChange.replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                ',',
-            );
-
-            const itemHTML = `
-                <div class="market-item p-4 border border-gray-200 rounded-md shadow-sm flex flex-col space-y-2 ${index === 0 ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'} cursor-pointer text-gray-800" data-item="${item}">
-                    <div class="text-xl font-semibold">${item}</div>
-                    <div class="text-sm flex justify-between">
-                        <span>$${priceLabel} USD</span>
-                        <span class="${valueChange > 0 ? 'text-green-600' : 'text-red-600'} font-medium">
-                            ${valueChange > 0 ? '+' : ''}${valueLabel} (${percentageLabel}%)
-                        </span>
-                    </div>
-                </div>
-            `;
-
-            marketItemsContainer.append(itemHTML);
-        });
-
-        $('.market-item')
-            .first()
-            .addClass('bg-blue-100')
-            .removeClass('bg-white hover:bg-gray-100');
-    }
-
     function updateChart(timeframe, item) {
         try {
-            const categoryData = getCurrentCategoryData();
-            const itemBars = categoryData[timeframe]?.bars[item];
+            const itemBars = marketData[currentCategory][timeframe]?.bars[item];
 
             if (!itemBars || itemBars.length < 3) {
                 initialiseChart([], timeframe);
                 return;
             }
-
             initialiseChart(itemBars, timeframe);
 
             $('.market-item')
@@ -425,36 +457,32 @@ $(function () {
         }).responseJSON.data;
     }
 
-    const firstTimeframe = Object.keys(stockData)[0];
-    populateMarketItems(stockData, firstTimeframe);
-    updateChart(firstTimeframe, marketItemOrder[0]);
+    populateDynamicContent();
+    populateMarketItems(marketData[currentCategory], currentTimeframe);
+    updateChart(currentTimeframe, marketItemOrder[0]);
 
-    $('.category-tab').on('click', function () {
+    $(document).on('click', '.category-tab', function () {
+        const selectedCategory = $(this).data('category');
+        if (selectedCategory === currentCategory) return;
+
         $('.category-tab')
             .removeClass('border-b-2 border-blue-600 text-blue-600')
             .addClass('text-gray-600 hover:text-gray-800');
-
         $(this)
             .addClass('border-b-2 border-blue-600 text-blue-600')
             .removeClass('text-gray-600 hover:text-gray-800');
 
-        currentCategory = $(this).data('category');
-        const currentData = getCurrentCategoryData();
+        currentCategory = selectedCategory;
         marketItemOrder = [];
 
-        populateMarketItems(currentData, currentTimeframe);
-        const firstItem = marketItemOrder[0];
-        updateChart(currentTimeframe, firstItem);
+        populateTimeframes(marketData[currentCategory]);
+        populateMarketItems(marketData[currentCategory], currentTimeframe);
+        updateChart(currentTimeframe, marketItemOrder[0]);
     });
 
-    $(document).on('click', '.market-item', function () {
-        const selectedItem = $(this).data('item');
-        updateChart(currentTimeframe, selectedItem);
-    });
-
-    $('.timeframe-button').on('click', function () {
-        const newTimeframe = $(this).data('timeframe');
-        if (newTimeframe === currentTimeframe) return;
+    $(document).on('click', '.timeframe-button', function () {
+        const selectedTimeframe = $(this).data('timeframe');
+        if (selectedTimeframe === currentTimeframe) return;
 
         $('.timeframe-button')
             .removeClass('bg-blue-100 text-blue-600')
@@ -463,10 +491,21 @@ $(function () {
             .addClass('bg-blue-100 text-blue-600')
             .removeClass('text-gray-600 hover:bg-gray-100');
 
-        currentTimeframe = newTimeframe;
+        currentTimeframe = selectedTimeframe;
         const selectedItem = $('.market-item.bg-blue-100').data('item');
 
-        populateMarketItems(getCurrentCategoryData(), currentTimeframe);
+        populateMarketItems(marketData[currentCategory], currentTimeframe);
         updateChart(currentTimeframe, selectedItem);
+    });
+
+    $(document).on('click', '.market-item', function () {
+        const selectedItem = $(this).data('item');
+        if (selectedItem === $('.market-item.bg-blue-100').data('item')) return;
+
+        updateChart(currentTimeframe, selectedItem);
+    });
+
+    $('#market-chart-type-toggle').on('click', function () {
+        alert('Not Implemented!');
     });
 });
