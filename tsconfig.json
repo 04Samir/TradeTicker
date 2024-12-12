@@ -4,6 +4,7 @@
         "module": "CommonJS",
         "rootDir": "./src",
         "outDir": "./dist",
+        "typeRoots": ["node_modules/@types", "./src/types"],
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,

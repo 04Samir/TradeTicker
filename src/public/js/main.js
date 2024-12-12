@@ -23,8 +23,77 @@ $(function () {
         }
     });
 
+    let loggedIn = false;
+
+    function saveAccessToken(token) {
+        localStorage.setItem('access_token', token);
+    }
+
+    function getAccessToken() {
+        return localStorage.getItem('access_token');
+    }
+
+    function refreshUI(isLoggedIn) {
+        if (isLoggedIn) {
+            $('#user-button').html(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-gray-600">
+                    <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+                </svg>
+            `);
+        } else {
+            $('#user-button').html(`
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+            `);
+        }
+        loggedIn = isLoggedIn;
+    }
+
+    function checkLoginState() {
+        const token = getAccessToken();
+        if (token) {
+            $.ajax({
+                url: '/api/auth/@me',
+                type: 'GET',
+                headers: { Authorization: `Bearer ${token}` },
+                success: function () {
+                    refreshUI(true);
+                },
+                error: function () {
+                    refreshAccessToken();
+                },
+            });
+        } else {
+            refreshUI(false);
+        }
+    }
+
+    function refreshAccessToken() {
+        $.ajax({
+            url: '/api/auth/refresh',
+            type: 'POST',
+            success: function (response) {
+                if (response.access_token) {
+                    saveAccessToken(response.access_token);
+                    refreshUI(true);
+                } else {
+                    refreshUI(false);
+                }
+            },
+            error: function () {
+                localStorage.removeItem('access_token');
+                refreshUI(false);
+            },
+        });
+    }
+
     $('#user-button').on('click', function () {
-        showModal('user-modal');
+        if (!loggedIn) {
+            showModal('user-modal');
+        } else {
+            location.href = '/@me';
+        }
     });
 
     $('.auth-form-toggle').on('click', function (event) {
@@ -66,10 +135,9 @@ $(function () {
             contentType: 'application/json',
             data: JSON.stringify(formData),
             success: function (response) {
-                console.log(
-                    `${formId}: ${response.code} -> ${response.message}`,
-                );
-                alert(response.message || 'Request Successful');
+                saveAccessToken(response.access_token);
+                refreshUI(true);
+                location.reload();
             },
             error: function (xhr, status, error) {
                 console.log(
@@ -79,6 +147,7 @@ $(function () {
             },
         });
     });
+    checkLoginState();
 
     $('#search-input').on('click', function (event) {
         if (event.isDefaultPrevented()) return;
@@ -91,7 +160,6 @@ $(function () {
             focusedInput.trigger('focus');
         }
     });
-
     initialiseSearchEvents();
 
     let menuClicked = false;

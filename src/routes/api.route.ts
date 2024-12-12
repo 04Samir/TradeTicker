@@ -1,8 +1,19 @@
 import { Request, Response, Router } from 'express';
 
+import { refreshToken } from '../middleware';
 import { HTTPError, json, markets } from '../utils';
 
 const router = Router();
+
+router.post('/auth/refresh', refreshToken);
+
+router.get('/auth/@me', async (req: Request, res: Response) => {
+    if (req.session?.user) {
+        return json.respond(res, 200, req.session!.user);
+    } else {
+        return json.error(res, 401);
+    }
+});
 
 router.get('/markets/:type/movers', async (req: Request, res: Response) => {
     const { type } = req.params;

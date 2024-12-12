@@ -20,6 +20,7 @@ export default tseslint.config(
         ...eslintConfigJquery,
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/ban-ts-comment': 'off',
             'padding-line-between-statements': [
                 'error',
                 { blankLine: 'always', prev: 'block', next: '*' },

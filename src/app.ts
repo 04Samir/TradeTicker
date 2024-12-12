@@ -1,5 +1,7 @@
 import express from 'express';
 
+import cookieParser from 'cookie-parser';
+import cookieSession from 'cookie-session';
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
@@ -9,6 +11,20 @@ import { errorHandler, notFoundHandler } from './utils';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cookieParser());
+
+app.use(
+    // @ts-ignore
+    cookieSession({
+        name: 'session',
+        keys: [process.env.SESSION_SECRET as string],
+        maxAge: 15 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+    }),
+);
 
 app.use(express.json());
 app.use(express.static(path.resolve(__dirname, '../dist/public')));

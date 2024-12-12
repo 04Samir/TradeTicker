@@ -3,17 +3,22 @@ import { Request, Response, Router } from 'express';
 import bcrypt from 'bcrypt';
 
 import { db } from '../database';
-import { local } from '../utils';
-import { json } from '../utils';
+import { clearSession, createSession, isAuthenticated } from '../middleware';
+import { json, local } from '../utils';
 
 const router = Router();
 
-const PEPPER = 'P3PP3R';
+const PEPPER = process.env.AUTH_PEPPER as string;
 
 router.get('/', (req: Request, res: Response) => {
+    if (req.session?.user) {
+        return res.redirect('/');
+    }
+
     res.render('layout', {
         title: 'Auth',
         view: 'auth',
+
         type: 'login',
         nav: false,
         footer: false,
@@ -105,6 +110,10 @@ router.post('/validate/password', (req: Request, res: Response) => {
 });
 
 router.post('/register', async (req: Request, res: Response) => {
+    if (req.session?.user) {
+        return json.error(res, 400, 'Already Logged In');
+    }
+
     try {
         const { username, password, confirmedPassword } = req.body;
 
@@ -139,13 +148,30 @@ router.post('/register', async (req: Request, res: Response) => {
         }
 
         const hashedPassword = await bcrypt.hash(password + PEPPER, 10);
-        await db.query('INSERT INTO Users (Username, Password) VALUES (?, ?)', [
-            username.toLowerCase(),
-            hashedPassword,
-        ]);
+        const [result] = await db.query(
+            'INSERT INTO Users (Username, Password) VALUES (?, ?)',
+            [username.toLowerCase(), hashedPassword],
+        );
+
+        const [userRows] = await db.query(
+            'SELECT ID, Version FROM Users WHERE ID = ?',
+            [(result as any).insertId],
+        );
+        if (!Array.isArray(userRows) || userRows.length === 0) {
+            return json.error(res, 500);
+        }
+
+        const user: any = userRows[0];
+        const { accessToken } = await createSession(
+            res,
+            req,
+            user.ID,
+            user.Version,
+        );
 
         return json.respond(res, 201, {
             message: 'Registration Successful',
+            access_token: accessToken,
         });
     } catch (error) {
         console.error('Error in /register:', error);
@@ -154,6 +180,10 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 router.post('/login', async (req: Request, res: Response) => {
+    if (req.session?.user) {
+        return json.error(res, 400, 'Already Logged In');
+    }
+
     try {
         const { username, password } = req.body;
 
@@ -162,7 +192,7 @@ router.post('/login', async (req: Request, res: Response) => {
         }
 
         const [rows] = await db.query(
-            'SELECT ID, Username, Password FROM Users WHERE Username = ?',
+            'SELECT * FROM Users WHERE Username = ?',
             [username.toLowerCase()],
         );
         if (!Array.isArray(rows) || rows.length === 0) {
@@ -179,11 +209,26 @@ router.post('/login', async (req: Request, res: Response) => {
             return json.error(res, 400, 'Invalid Username or Password');
         }
 
-        return json.respond(res, 200, { message: 'Login Successful' });
+        const { accessToken } = await createSession(
+            res,
+            req,
+            user.ID,
+            user.Version,
+        );
+
+        return json.respond(res, 200, {
+            message: 'Login Successful',
+            access_token: accessToken,
+        });
     } catch (error) {
         console.error('Error in /login:', error);
         return json.error(res, 500, 'Internal Server Error');
     }
+});
+
+router.get('/logout', isAuthenticated, async (req: Request, res: Response) => {
+    await clearSession(req, res);
+    return res.redirect('/');
 });
 
 export default { router, path: '/auth' };
