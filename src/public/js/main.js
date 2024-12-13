@@ -88,6 +88,46 @@ $(function () {
         });
     }
 
+    $('.h-captcha').each(function () {
+        $(this).attr('data-sitekey', '05ae038c-9720-4558-87f0-096e94c40c6e');
+        $(this).attr('data-size', 'invisible');
+        $(this).attr('data-callback', 'onCaptchaSubmit');
+        $(this).attr('data-expired-callback', 'onCaptchaExpire');
+        $(this).attr('data-chalexpired-callback', 'onCaptchaExpire');
+        $(this).attr('data-close-callback', 'onCaptchaClose');
+        $(this).attr('data-error-callback', 'onCaptchaError');
+    });
+
+    let activeCaptcha;
+
+    $('.h-captcha').on('click', function () {
+        activeCaptcha = $(this).closest('form').attr('id');
+    });
+
+    function onCaptchaSubmit(token) {
+        $(`#${activeCaptcha}`)
+            .append(`<input type="hidden" name="captcha" value="${token}" />`)
+            .trigger('submit');
+
+        activeCaptcha = null;
+    }
+    window.onCaptchaSubmit = onCaptchaSubmit;
+
+    function onCaptchaExpire() {
+        activeCaptcha = null;
+    }
+    window.onCaptchaExpire = onCaptchaExpire;
+
+    function onCaptchaClose() {
+        activeCaptcha = null;
+    }
+    window.onCaptchaClose = onCaptchaClose;
+
+    function onCaptchaError() {
+        activeCaptcha = null;
+    }
+    window.onCaptchaError = onCaptchaError;
+
     $('#user-button').on('click', function () {
         if (!loggedIn) {
             showModal('user-modal');
@@ -338,6 +378,7 @@ $(function () {
 
         let lastFormattedLabel = '';
 
+        // eslint-disable-next-line no-undef
         marketChart = new Chart(ctx, {
             type: 'line',
             data: {

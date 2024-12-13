@@ -17,3 +17,11 @@ export const markets = axios.create({
     },
     validateStatus: () => true,
 });
+
+export const hcaptcha = axios.create({
+    baseURL: 'https://api.hcaptcha.com',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    validateStatus: () => true,
+});

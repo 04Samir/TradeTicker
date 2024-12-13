@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 import { db } from '../database';
 import { clearSession, createSession, isAuthenticated } from '../middleware';
-import { json, local } from '../utils';
+import { hcaptcha, json, local } from '../utils';
 
 const router = Router();
 
@@ -115,14 +115,29 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     try {
-        const { username, password, confirmedPassword } = req.body;
+        const { username, password, confirmedPassword, captcha } = req.body;
 
         if (!username || !password || !confirmedPassword) {
             return json.error(res, 400, 'All Fields are Required');
         }
+        if (!captcha) {
+            return json.error(res, 400, 'Captcha is Required');
+        }
 
         if (password !== confirmedPassword) {
             return json.error(res, 400, 'Passwords do NOT Match');
+        }
+
+        const captchaResponse = await hcaptcha.post('/siteverify', {
+            secret: process.env.HCAPTCHA_SECRET,
+            sitekey: '05ae038c-9720-4558-87f0-096e94c40c6e',
+            response: captcha,
+        });
+        if (captchaResponse.status !== 200) {
+            return json.error(res, 400, 'Captcha Verification Failed');
+        }
+        if (!captchaResponse.data.success) {
+            return json.error(res, 400, 'Captcha Verification Failed');
         }
 
         const validUsername = await local.post('/auth/validate/username', {
@@ -185,10 +200,25 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     try {
-        const { username, password } = req.body;
+        const { username, password, captcha } = req.body;
 
         if (!username || !password) {
-            return json.error(res, 400, 'Username and Password are Required');
+            return json.error(res, 400, 'Username & Password are Required');
+        }
+        if (!captcha) {
+            return json.error(res, 400, 'Captcha is Required');
+        }
+
+        const captchaResponse = await hcaptcha.post('/siteverify', {
+            secret: process.env.HCAPTCHA_SECRET,
+            sitekey: '05ae038c-9720-4558-87f0-096e94c40c6e',
+            response: captcha,
+        });
+        if (captchaResponse.status !== 200) {
+            return json.error(res, 400, 'Captcha Verification Failed');
+        }
+        if (!captchaResponse.data.success) {
+            return json.error(res, 400, 'Captcha Verification Failed');
         }
 
         const [rows] = await db.query(
