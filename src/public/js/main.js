@@ -8,12 +8,20 @@ import { disableDarkMode, enableDarkMode } from './scripts/theme.js';
 $(function () {
     $('.modal-backdrop').on('click', function () {
         hideModal($(this).closest('.modal').attr('id'));
+
+        if ($(this).closest('.modal').attr('id') === 'user-modal') {
+            $('#h-captcha-policies').toggleClass('hidden');
+        }
     });
 
     $(document).on('keydown', function (event) {
         if (event.key === 'Escape') {
             $('.modal:not(.hidden)').each(function () {
                 hideModal($(this).attr('id'));
+
+                if ($(this).attr('id') === 'user-modal') {
+                    $('#h-captcha-policies').toggleClass('hidden');
+                }
 
                 const focusedInput = $('input:focus');
                 if (focusedInput.length > 0) {
@@ -22,6 +30,17 @@ $(function () {
             });
         }
     });
+
+    if (localStorage.getItem('theme') === null) {
+        localStorage.setItem(
+            'theme',
+            window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light',
+        );
+    }
+    let darkMode = localStorage.getItem('theme') === 'dark';
 
     let loggedIn = false;
 
@@ -90,7 +109,9 @@ $(function () {
 
     $('.h-captcha').each(function () {
         $(this).attr('data-sitekey', '05ae038c-9720-4558-87f0-096e94c40c6e');
+        $(this).attr('data-theme', darkMode ? 'dark' : 'light');
         $(this).attr('data-size', 'invisible');
+        $(this).attr('data-tabindex', -1);
         $(this).attr('data-callback', 'onCaptchaSubmit');
         $(this).attr('data-expired-callback', 'onCaptchaExpire');
         $(this).attr('data-chalexpired-callback', 'onCaptchaExpire');
@@ -131,6 +152,7 @@ $(function () {
     $('#user-button').on('click', function () {
         if (!loggedIn) {
             showModal('user-modal');
+            $('#h-captcha-policies').toggleClass('hidden');
         } else {
             location.href = '/@me';
         }
@@ -238,7 +260,7 @@ $(function () {
         }, 200);
     });
 
-    if (localStorage.getItem('theme') === 'dark') {
+    if (darkMode) {
         enableDarkMode();
     } else {
         disableDarkMode();
