@@ -22,4 +22,25 @@ function disableDarkMode() {
     localStorage.setItem('theme', 'light');
 }
 
-export { enableDarkMode, disableDarkMode };
+function isDarkMode() {
+    return localStorage.getItem('theme') === 'dark';
+}
+
+function initTheme() {
+    if (localStorage.getItem('theme') === null) {
+        localStorage.setItem(
+            'theme',
+            window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light',
+        );
+    }
+    if (isDarkMode()) {
+        enableDarkMode();
+    } else {
+        disableDarkMode();
+    }
+}
+
+export { enableDarkMode, disableDarkMode, initTheme, isDarkMode };

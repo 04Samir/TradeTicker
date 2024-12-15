@@ -1,11 +1,22 @@
+import { updateChart } from './scripts/chart-viewer.js';
 import { hideModal, showModal } from './scripts/modal.js';
+import { initSearchEvents, updateSearchResults } from './scripts/search.js';
 import {
-    initialiseSearchEvents,
-    updateSearchResults,
-} from './scripts/search.js';
-import { disableDarkMode, enableDarkMode } from './scripts/theme.js';
+    disableDarkMode,
+    enableDarkMode,
+    initTheme,
+    isDarkMode,
+} from './scripts/theme.js';
+import { checkLoginState, refreshUI, saveAccessToken } from './scripts/user.js';
 
 $(function () {
+    let loggedIn = checkLoginState();
+
+    initTheme();
+    let darkMode = isDarkMode();
+
+    initSearchEvents();
+
     $('.modal-backdrop').on('click', function () {
         hideModal($(this).closest('.modal').attr('id'));
 
@@ -31,81 +42,17 @@ $(function () {
         }
     });
 
-    if (localStorage.getItem('theme') === null) {
-        localStorage.setItem(
-            'theme',
-            window.matchMedia &&
-                window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light',
-        );
-    }
-    let darkMode = localStorage.getItem('theme') === 'dark';
+    $('#search-input').on('click', function (event) {
+        if (event.isDefaultPrevented()) return;
 
-    let loggedIn = false;
+        showModal('search-modal');
+        updateSearchResults();
 
-    function saveAccessToken(token) {
-        localStorage.setItem('access_token', token);
-    }
-
-    function getAccessToken() {
-        return localStorage.getItem('access_token');
-    }
-
-    function refreshUI(isLoggedIn) {
-        if (isLoggedIn) {
-            $('#user-button').html(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-gray-600">
-                    <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
-                </svg>
-            `);
-        } else {
-            $('#user-button').html(`
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-600">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
-            `);
+        const focusedInput = $('#search-input');
+        if (focusedInput.length > 0) {
+            focusedInput.trigger('focus');
         }
-        loggedIn = isLoggedIn;
-    }
-
-    function checkLoginState() {
-        const token = getAccessToken();
-        if (token) {
-            $.ajax({
-                url: '/api/auth/@me',
-                type: 'GET',
-                headers: { Authorization: `Bearer ${token}` },
-                success: function () {
-                    refreshUI(true);
-                },
-                error: function () {
-                    refreshAccessToken();
-                },
-            });
-        } else {
-            refreshUI(false);
-        }
-    }
-
-    function refreshAccessToken() {
-        $.ajax({
-            url: '/api/auth/refresh',
-            type: 'POST',
-            success: function (response) {
-                if (response.access_token) {
-                    saveAccessToken(response.access_token);
-                    refreshUI(true);
-                } else {
-                    refreshUI(false);
-                }
-            },
-            error: function () {
-                localStorage.removeItem('access_token');
-                refreshUI(false);
-            },
-        });
-    }
+    });
 
     $('.h-captcha').each(function () {
         $(this).attr('data-sitekey', '05ae038c-9720-4558-87f0-096e94c40c6e');
@@ -176,109 +123,6 @@ $(function () {
         }
     });
 
-    function handleValidation(
-        inputField,
-        errorContainer,
-        isValid,
-        errorMessage = '',
-    ) {
-        inputField.toggleClass('shadow-red-500', !isValid);
-        errorContainer.text(isValid ? '' : errorMessage);
-        checkFormValidity(inputField.closest('form').attr('id'));
-    }
-
-    function validateField(inputId, validationUrl) {
-        const inputField = $(`#${inputId}`);
-        const errorContainer = $(`#${inputId}-error`);
-
-        function performValidation() {
-            const value = inputField.val();
-
-            if (!value) {
-                handleValidation(
-                    inputField,
-                    errorContainer,
-                    false,
-                    'Field Cannot be Empty',
-                );
-                return;
-            }
-
-            $.ajax({
-                url: validationUrl,
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ [inputField.attr('name')]: value }),
-                success: function () {
-                    handleValidation(inputField, errorContainer, true);
-                },
-                error: function (xhr) {
-                    handleValidation(
-                        inputField,
-                        errorContainer,
-                        false,
-                        xhr.responseJSON?.error?.message,
-                    );
-                },
-            });
-        }
-
-        inputField.on('input', performValidation);
-        inputField.on('blur', performValidation);
-    }
-
-    function validateNonAjaxField(inputId, customValidation) {
-        const inputField = $(`#${inputId}`);
-        const errorContainer = $(`#${inputId}-error`);
-
-        function performValidation() {
-            const value = inputField.val();
-            const { isValid, message } = customValidation(value);
-            handleValidation(inputField, errorContainer, isValid, message);
-        }
-
-        inputField.on('input', performValidation);
-        inputField.on('blur', performValidation);
-    }
-
-    function validateConfirmPassword(confirmId, passwordId) {
-        validateNonAjaxField(confirmId, (confirmValue) => {
-            const passwordValue = $(`#${passwordId}`).val();
-
-            if (!confirmValue) {
-                return { isValid: false, message: 'Field Cannot be Empty' };
-            }
-            if (confirmValue === passwordValue) {
-                return { isValid: true };
-            }
-            return { isValid: false, message: 'Passwords do NOT match' };
-        });
-    }
-
-    function checkFormValidity(formId) {
-        const form = $(`#${formId}`);
-        const submitButton = form.find('button[type="submit"]');
-
-        const allValid = form
-            .find('input')
-            .toArray()
-            .every((input) => {
-                const value = $(input).val();
-                return value && !$(input).hasClass('shadow-red-500');
-            });
-
-        submitButton.prop('disabled', !allValid);
-    }
-
-    validateField('login-username', '/auth/validate/username');
-    validateNonAjaxField('login-password', (value) => ({
-        isValid: !!value,
-        message: 'Password Cannot be Empty',
-    }));
-    validateField('register-username', '/auth/validate/username');
-    validateField('register-password', '/auth/validate/password');
-    validateConfirmPassword('register-confirm-password', 'register-password');
-
     $('form').on('submit', function (event) {
         const formId = $(this).attr('id');
 
@@ -306,6 +150,7 @@ $(function () {
             success: function (response) {
                 saveAccessToken(response.access_token);
                 refreshUI(true);
+                loggedIn = true;
                 location.href = '/@me';
             },
             error: function (xhr) {
@@ -313,20 +158,6 @@ $(function () {
             },
         });
     });
-    checkLoginState();
-
-    $('#search-input').on('click', function (event) {
-        if (event.isDefaultPrevented()) return;
-
-        showModal('search-modal');
-        updateSearchResults();
-
-        const focusedInput = $('#search-input');
-        if (focusedInput.length > 0) {
-            focusedInput.trigger('focus');
-        }
-    });
-    initialiseSearchEvents();
 
     let menuClicked = false;
 
@@ -364,12 +195,6 @@ $(function () {
         }, 200);
     });
 
-    if (darkMode) {
-        enableDarkMode();
-    } else {
-        disableDarkMode();
-    }
-
     $('#theme-mode-toggle').on('click', function () {
         if (localStorage.getItem('theme') === 'dark') {
             disableDarkMode();
@@ -378,7 +203,6 @@ $(function () {
         }
     });
 
-    let marketChart;
     let currentCategory;
     let currentTimeframe;
     let marketItemOrder = [];
@@ -390,14 +214,18 @@ $(function () {
         marketData[type] = fetchMarketData(type);
     });
 
+    populateDynamicContent();
+    populateMarketItems(marketData[currentCategory], currentTimeframe);
+
     function populateDynamicContent() {
         const categoriesContainer = $('#market-categories');
         categoriesContainer.empty();
         marketTypes.forEach((type, index) => {
             const categoryHTML = `
-            <div class="category-tab pb-2 px-4 text-base font-medium cursor-pointer ${index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800'}" data-category="${type}">
-                ${type.charAt(0).toUpperCase() + type.slice(1)}
-            </div>`;
+                <div class="category-tab pb-2 px-4 text-base font-medium cursor-pointer ${index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800'}" data-category="${type}">
+                    ${type.charAt(0).toUpperCase() + type.slice(1)}
+                </div>
+            `;
             categoriesContainer.append(categoryHTML);
         });
 
@@ -405,25 +233,24 @@ $(function () {
         populateTimeframes(marketData[currentCategory]);
     }
 
-    function populateTimeframes(categoryData) {
+    function populateTimeframes(categoryData, timeframe = null) {
         const timeframesContainer = $('#market-timeframes');
         timeframesContainer.empty();
 
         const timeframes = Object.keys(categoryData || {});
-        timeframes.forEach((frame, index) => {
+        timeframes.forEach((frame) => {
             const timeframeHTML = `
-                <button class="timeframe-button px-3 py-1 rounded-md text-sm font-medium ${
-                    index === 0
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'text-gray-600 hover:bg-gray-100'
-                }" data-timeframe="${frame}">
+                <button class="timeframe-button px-3 py-1 rounded-md text-sm font-medium ${frame === (timeframe || timeframes[0]) ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}" data-timeframe="${frame}">
                     ${frame}
                 </button>
             `;
             timeframesContainer.append(timeframeHTML);
         });
 
-        currentTimeframe = timeframes[0];
+        currentTimeframe =
+            timeframe && timeframes.includes(timeframe)
+                ? timeframe
+                : timeframes[0];
     }
 
     function populateMarketItems(data, timeframe) {
@@ -433,7 +260,7 @@ $(function () {
         const items = Object.keys(data[timeframe]?.bars || {}).sort();
 
         if (
-            marketItemOrder.length === 0 ||
+            !marketItemOrder.length ||
             currentCategory.toLowerCase() === 'crypto'
         ) {
             marketItemOrder = items;
@@ -479,7 +306,6 @@ $(function () {
                     </div>
                 </div>
             `;
-
             marketItemsContainer.append(itemHTML);
         });
 
@@ -487,198 +313,12 @@ $(function () {
             .first()
             .addClass('bg-blue-100')
             .removeClass('bg-white hover:bg-gray-100');
-    }
 
-    function initialiseChart(data, timeframe) {
-        const ctx = document.getElementById('market-chart').getContext('2d');
-        const parsedData = parseChartData(data);
-
-        if (marketChart) {
-            marketChart.destroy();
-        }
-
-        const timeUnit = getTimeUnit(timeframe);
-        const firstPrice = parsedData.prices[0];
-        const lastPrice = parsedData.prices[parsedData.prices.length - 1];
-        const isPriceUp = lastPrice > firstPrice;
-
-        let lastFormattedLabel = '';
-
-        // eslint-disable-next-line no-undef
-        marketChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: parsedData.labels,
-                datasets: [
-                    {
-                        data: parsedData.prices,
-                        borderColor: isPriceUp ? '#4CAF50' : '#FF3B30',
-                        backgroundColor: isPriceUp
-                            ? 'rgba(76, 175, 80, 0.1)'
-                            : 'rgba(255, 59, 48, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0,
-                        pointRadius: 0,
-                        pointHoverRadius: 5,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: timeUnit,
-                            displayFormats: {
-                                minute: 'HH:mm',
-                                hour: 'HH:mm',
-                                day: 'MMM d',
-                                week: 'MMM d',
-                                month: 'MMM yyyy',
-                                year: 'yyyy',
-                            },
-                        },
-                        grid: { display: false },
-                        ticks: {
-                            source: 'auto',
-                            autoSkip: true,
-                            maxRotation: 0,
-                            minRotation: 0,
-                            callback: function (value) {
-                                const date = new Date(value);
-                                let formattedLabel;
-
-                                switch (timeframe) {
-                                    case '1D': {
-                                        const minutes = date.getMinutes();
-                                        if (minutes % 30 === 0) {
-                                            formattedLabel =
-                                                date.toLocaleTimeString([], {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                });
-                                        }
-                                        break;
-                                    }
-                                    case '1W': {
-                                        formattedLabel =
-                                            date.toLocaleDateString([], {
-                                                weekday: 'short',
-                                            });
-                                        break;
-                                    }
-                                    case '1M': {
-                                        formattedLabel =
-                                            date.toLocaleDateString([], {
-                                                day: 'numeric',
-                                                month: 'short',
-                                            });
-                                        break;
-                                    }
-                                    case '6M':
-                                        formattedLabel =
-                                            date.toLocaleDateString([], {
-                                                month: 'short',
-                                                year: 'numeric',
-                                            });
-                                        break;
-                                    case '1Y': {
-                                        formattedLabel =
-                                            date.toLocaleDateString([], {
-                                                month: 'short',
-                                                year: 'numeric',
-                                            });
-                                        break;
-                                    }
-                                    case '5Y': {
-                                        formattedLabel =
-                                            date.toLocaleDateString([], {
-                                                year: 'numeric',
-                                            });
-                                        break;
-                                    }
-                                    default: {
-                                        formattedLabel =
-                                            date.toLocaleDateString();
-                                        break;
-                                    }
-                                }
-
-                                if (formattedLabel === lastFormattedLabel) {
-                                    return null;
-                                }
-
-                                lastFormattedLabel = formattedLabel;
-                                return formattedLabel;
-                            },
-                        },
-                    },
-                    y: {
-                        position: 'right',
-                        grid: { display: false },
-                        ticks: {
-                            callback: (value) => value.toFixed(2),
-                        },
-                    },
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        enabled: true,
-                    },
-                },
-            },
-        });
-    }
-
-    function getTimeUnit(timeframe) {
-        switch (timeframe) {
-            case '1D':
-                return 'minute';
-            case '1W':
-                return 'hour';
-            case '1M':
-                return 'day';
-            case '6M':
-                return 'day';
-            case '1Y':
-                return 'day';
-            case '5Y':
-                return 'week';
-            default:
-                return 'day';
-        }
-    }
-
-    function parseChartData(bars) {
-        const labels = bars.map((bar) => new Date(bar.t));
-        const prices = bars.map((bar) => bar.c);
-
-        return { labels, prices };
-    }
-
-    function updateChart(timeframe, item) {
-        try {
-            const itemBars = marketData[currentCategory][timeframe]?.bars[item];
-
-            if (!itemBars || itemBars.length < 3) {
-                initialiseChart([], timeframe);
-                return;
-            }
-            initialiseChart(itemBars, timeframe);
-
-            $('.market-item')
-                .removeClass('bg-blue-100')
-                .addClass('bg-white hover:bg-gray-100');
-            $(`.market-item[data-item="${item}"]`)
-                .addClass('bg-blue-100')
-                .removeClass('bg-white hover:bg-gray-100');
-        } catch (error) {
-            console.error('Error Updating Chart:', error);
-        }
+        updateChart(
+            marketData[currentCategory],
+            currentTimeframe,
+            marketItemOrder[0],
+        );
     }
 
     function fetchMarketData(type) {
@@ -691,10 +331,6 @@ $(function () {
             },
         }).responseJSON.data;
     }
-
-    populateDynamicContent();
-    populateMarketItems(marketData[currentCategory], currentTimeframe);
-    updateChart(currentTimeframe, marketItemOrder[0]);
 
     $(document).on('click', '.category-tab', function () {
         const selectedCategory = $(this).data('category');
@@ -710,9 +346,8 @@ $(function () {
         currentCategory = selectedCategory;
         marketItemOrder = [];
 
-        populateTimeframes(marketData[currentCategory]);
+        populateTimeframes(marketData[currentCategory], currentTimeframe);
         populateMarketItems(marketData[currentCategory], currentTimeframe);
-        updateChart(currentTimeframe, marketItemOrder[0]);
     });
 
     $(document).on('click', '.timeframe-button', function () {
@@ -730,14 +365,22 @@ $(function () {
         const selectedItem = $('.market-item.bg-blue-100').data('item');
 
         populateMarketItems(marketData[currentCategory], currentTimeframe);
-        updateChart(currentTimeframe, selectedItem);
+        updateChart(
+            marketData[currentCategory],
+            currentTimeframe,
+            selectedItem,
+        );
     });
 
     $(document).on('click', '.market-item', function () {
         const selectedItem = $(this).data('item');
         if (selectedItem === $('.market-item.bg-blue-100').data('item')) return;
 
-        updateChart(currentTimeframe, selectedItem);
+        updateChart(
+            marketData[currentCategory],
+            currentTimeframe,
+            selectedItem,
+        );
     });
 
     $('#market-chart-type-toggle').on('click', function () {

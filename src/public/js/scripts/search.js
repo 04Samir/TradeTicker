@@ -105,7 +105,7 @@ function updateSearchResults() {
     }
 }
 
-function initialiseSearchEvents() {
+function initSearchEvents() {
     $('#search-container').on('submit', function (event) {
         const query = $('#search-input').val().trim();
         if (query !== '') {
@@ -156,4 +156,4 @@ function initialiseSearchEvents() {
     });
 }
 
-export { updateSearchResults, initialiseSearchEvents };
+export { updateSearchResults, initSearchEvents as initSearchEvents };
