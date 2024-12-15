@@ -2,3 +2,7 @@
 #footer-text {
     user-select: none;
 }
+
+button:disabled:hover {
+    cursor: not-allowed;
+}

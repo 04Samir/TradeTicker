@@ -12,7 +12,7 @@ const PEPPER = process.env.AUTH_PEPPER as string;
 
 router.get('/', (req: Request, res: Response) => {
     if (req.session?.user) {
-        return res.redirect('/');
+        return res.redirect('/@me');
     }
 
     res.render('layout', {

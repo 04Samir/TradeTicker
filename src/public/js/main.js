@@ -167,11 +167,117 @@ $(function () {
         if (!$('#login-form').hasClass('hidden')) {
             $('#auth-form-title').text('Welcome Back!');
             $('.auth-form-toggle').text('Register');
+            $('#register-password').val('');
+            $('#register-confirm-password').val('');
         } else {
             $('#auth-form-title').text('Create an Account');
             $('.auth-form-toggle').text('Login');
+            $('#login-password').val('');
         }
     });
+
+    function handleValidation(
+        inputField,
+        errorContainer,
+        isValid,
+        errorMessage = '',
+    ) {
+        inputField.toggleClass('shadow-red-500', !isValid);
+        errorContainer.text(isValid ? '' : errorMessage);
+        checkFormValidity(inputField.closest('form').attr('id'));
+    }
+
+    function validateField(inputId, validationUrl) {
+        const inputField = $(`#${inputId}`);
+        const errorContainer = $(`#${inputId}-error`);
+
+        function performValidation() {
+            const value = inputField.val();
+
+            if (!value) {
+                handleValidation(
+                    inputField,
+                    errorContainer,
+                    false,
+                    'Field Cannot be Empty',
+                );
+                return;
+            }
+
+            $.ajax({
+                url: validationUrl,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ [inputField.attr('name')]: value }),
+                success: function () {
+                    handleValidation(inputField, errorContainer, true);
+                },
+                error: function (xhr) {
+                    handleValidation(
+                        inputField,
+                        errorContainer,
+                        false,
+                        xhr.responseJSON?.error?.message,
+                    );
+                },
+            });
+        }
+
+        inputField.on('input', performValidation);
+        inputField.on('blur', performValidation);
+    }
+
+    function validateNonAjaxField(inputId, customValidation) {
+        const inputField = $(`#${inputId}`);
+        const errorContainer = $(`#${inputId}-error`);
+
+        function performValidation() {
+            const value = inputField.val();
+            const { isValid, message } = customValidation(value);
+            handleValidation(inputField, errorContainer, isValid, message);
+        }
+
+        inputField.on('input', performValidation);
+        inputField.on('blur', performValidation);
+    }
+
+    function validateConfirmPassword(confirmId, passwordId) {
+        validateNonAjaxField(confirmId, (confirmValue) => {
+            const passwordValue = $(`#${passwordId}`).val();
+
+            if (!confirmValue) {
+                return { isValid: false, message: 'Field Cannot be Empty' };
+            }
+            if (confirmValue === passwordValue) {
+                return { isValid: true };
+            }
+            return { isValid: false, message: 'Passwords do NOT match' };
+        });
+    }
+
+    function checkFormValidity(formId) {
+        const form = $(`#${formId}`);
+        const submitButton = form.find('button[type="submit"]');
+
+        const allValid = form
+            .find('input')
+            .toArray()
+            .every((input) => {
+                const value = $(input).val();
+                return value && !$(input).hasClass('shadow-red-500');
+            });
+
+        submitButton.prop('disabled', !allValid);
+    }
+
+    validateField('login-username', '/auth/validate/username');
+    validateNonAjaxField('login-password', (value) => ({
+        isValid: !!value,
+        message: 'Password Cannot be Empty',
+    }));
+    validateField('register-username', '/auth/validate/username');
+    validateField('register-password', '/auth/validate/password');
+    validateConfirmPassword('register-confirm-password', 'register-password');
 
     $('form').on('submit', function (event) {
         const formId = $(this).attr('id');
@@ -190,6 +296,7 @@ $(function () {
 
         const URL = $(this).attr('action');
         const METHOD = $(this).attr('method') || 'POST';
+        $('#auth-form-error').text('');
 
         $.ajax({
             url: URL,
@@ -199,13 +306,10 @@ $(function () {
             success: function (response) {
                 saveAccessToken(response.access_token);
                 refreshUI(true);
-                location.reload();
+                location.href = '/@me';
             },
-            error: function (xhr, status, error) {
-                console.log(
-                    `${formId}: ${status} -> ${JSON.stringify(xhr.responseJSON?.error, null, 4)}`,
-                );
-                alert(error || 'An Error Occurred.');
+            error: function (xhr) {
+                $('#auth-form-error').text(xhr.responseJSON?.error?.message);
             },
         });
     });
@@ -573,7 +677,7 @@ $(function () {
                 .addClass('bg-blue-100')
                 .removeClass('bg-white hover:bg-gray-100');
         } catch (error) {
-            console.error('Error updating chart data:', error);
+            console.error('Error Updating Chart:', error);
         }
     }
 
@@ -637,6 +741,6 @@ $(function () {
     });
 
     $('#market-chart-type-toggle').on('click', function () {
-        alert('Not Implemented!');
+        alert('Coming Soon!');
     });
 });
