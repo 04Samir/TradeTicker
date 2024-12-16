@@ -17,6 +17,17 @@ $(function () {
 
     initSearchEvents();
 
+    if ($('#hero').length > 0) {
+        $(window).on('scroll', function () {
+            const navbar = $('#navbar');
+            if ($(this).scrollTop() > 10) {
+                navbar.addClass('shadow-sm border-gray-500');
+            } else {
+                navbar.removeClass('shadow-sm border-gray-500');
+            }
+        });
+    }
+
     $('.modal-backdrop').on('click', function () {
         hideModal($(this).closest('.modal').attr('id'));
 
