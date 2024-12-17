@@ -30,6 +30,10 @@ router.get('/', async (req: Request, res: Response) => {
     res.render('layout', { title: 'Home', view: 'index', news });
 });
 
+router.get('/about', async (req: Request, res: Response) => {
+    res.render('layout', { title: 'About', view: 'about' });
+});
+
 router.get('/search', async (req: Request, res: Response) => {
     const { query } = req.query;
 
