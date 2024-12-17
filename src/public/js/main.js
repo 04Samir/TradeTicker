@@ -1,4 +1,3 @@
-import { updateChart } from './scripts/chart-viewer.js';
 import { hideModal, showModal } from './scripts/modal.js';
 import { initSearchEvents, updateSearchResults } from './scripts/search.js';
 import {
@@ -8,6 +7,7 @@ import {
     isDarkMode,
 } from './scripts/theme.js';
 import { checkLoginState, refreshUI, saveAccessToken } from './scripts/user.js';
+import { updateChart } from './scripts/viewer.js';
 
 $(function () {
     let loggedIn = checkLoginState();
@@ -217,6 +217,7 @@ $(function () {
         } else {
             enableDarkMode();
         }
+        alert('Coming Soon!');
     });
 
     let currentCategory;
