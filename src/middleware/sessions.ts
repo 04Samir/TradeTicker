@@ -57,7 +57,14 @@ export const isAuthenticated = async (
 
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-        return json.error(res, 401);
+        res.status(401);
+        return res.format({
+            html: () =>
+                res.redirect(
+                    `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                ),
+            json: () => json.error(res, 401),
+        });
     }
 
     try {
@@ -69,18 +76,39 @@ export const isAuthenticated = async (
         );
 
         if (!Array.isArray(rows) || rows.length === 0) {
-            return json.error(res, 401);
+            res.status(401);
+            return res.format({
+                html: () =>
+                    res.redirect(
+                        `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                    ),
+                json: () => json.error(res, 401),
+            });
         }
 
         const user = rows[0] as any;
         if (user.version !== payload.version) {
-            return json.error(res, 401);
+            res.status(401);
+            return res.format({
+                html: () =>
+                    res.redirect(
+                        `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                    ),
+                json: () => json.error(res, 401),
+            });
         }
 
         req.session!.user = payload as { id: number; version: number };
         next();
     } catch {
-        return json.error(res, 401);
+        res.status(401);
+        return res.format({
+            html: () =>
+                res.redirect(
+                    `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                ),
+            json: () => json.error(res, 401),
+        });
     }
 };
 

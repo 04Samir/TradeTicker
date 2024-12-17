@@ -50,7 +50,7 @@ router.post('/auth/refresh', refreshToken);
 
 router.get('/auth/@me', async (req: Request, res: Response) => {
     if (req.session?.user) {
-        return json.respond(res, 200, req.session!.user);
+        return json.respond(res, 200, { user: req.session.user });
     } else {
         return json.error(res, 401);
     }

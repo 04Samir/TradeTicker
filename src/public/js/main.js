@@ -26,6 +26,8 @@ $(function () {
                 navbar.removeClass('shadow-sm border-gray-500');
             }
         });
+    } else {
+        $('#navbar').addClass('shadow-sm border-gray-500');
     }
 
     $('.modal-backdrop').on('click', function () {
@@ -162,7 +164,10 @@ $(function () {
                 saveAccessToken(response.access_token);
                 refreshUI(true);
                 loggedIn = true;
-                location.href = '/@me';
+                const redirect = new URLSearchParams(
+                    window.location.search,
+                ).get('redirect');
+                location.href = redirect || '/@me';
             },
             error: function (xhr) {
                 $('#auth-form-error').text(xhr.responseJSON?.error?.message);
