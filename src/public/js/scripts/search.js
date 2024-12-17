@@ -143,4 +143,4 @@ function initSearchEvents() {
     $('.filter-button[data-category="All"]').trigger('click');
 }
 
-export { updateSearchResults, initSearchEvents as initSearchEvents };
+export { initSearchEvents, updateSearchResults };

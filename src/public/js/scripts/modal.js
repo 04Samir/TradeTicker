@@ -45,4 +45,31 @@ function hideModal(modalId) {
     }
 }
 
-export { showModal, hideModal };
+function initModalEvents() {
+    $('.modal-backdrop').on('click', function () {
+        hideModal($(this).closest('.modal').attr('id'));
+
+        if ($(this).closest('.modal').attr('id') === 'user-modal') {
+            $('#h-captcha-policies').toggleClass('hidden');
+        }
+    });
+
+    $(document).on('keydown', function (event) {
+        if (event.key === 'Escape') {
+            $('.modal:not(.hidden)').each(function () {
+                hideModal($(this).attr('id'));
+
+                if ($(this).attr('id') === 'user-modal') {
+                    $('#h-captcha-policies').toggleClass('hidden');
+                }
+
+                const focusedInput = $('input:focus');
+                if (focusedInput.length > 0) {
+                    focusedInput.trigger('blur');
+                }
+            });
+        }
+    });
+}
+
+export { hideModal, initModalEvents, showModal };

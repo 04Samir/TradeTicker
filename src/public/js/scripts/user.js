@@ -27,7 +27,7 @@ function checkLoginState() {
     const token = getAccessToken();
     if (token) {
         return $.ajax({
-            url: '/api/auth/@me',
+            url: '/api/@me',
             type: 'GET',
             headers: { Authorization: `Bearer ${token}` },
             success: function () {
@@ -155,24 +155,33 @@ function checkFormValidity(formId) {
     submitButton.prop('disabled', !allValid);
 }
 
-validateField('login-username', '/auth/validate/username');
-validateNonAjaxField('login-password', (value) => ({
-    isValid: !!value,
-    message: 'Password Cannot be Empty',
-}));
-validateField('register-username', '/auth/validate/username');
-validateField('register-password', '/auth/validate/password');
-validateConfirmPassword('register-confirm-password', 'register-password');
+function initUserEvents() {
+    validateField('login-username', '/auth/validate/username');
+    validateNonAjaxField('login-password', (value) => ({
+        isValid: !!value,
+        message: 'Password Cannot be Empty',
+    }));
+    validateField('register-username', '/auth/validate/username');
+    validateField('register-password', '/auth/validate/password');
+    validateConfirmPassword('register-confirm-password', 'register-password');
 
-export {
-    saveAccessToken,
-    getAccessToken,
-    refreshUI,
-    checkLoginState,
-    refreshAccessToken,
-    handleValidation,
-    validateField,
-    validateNonAjaxField,
-    validateConfirmPassword,
-    checkFormValidity,
-};
+    $('.auth-form-toggle').on('click', function (event) {
+        event.preventDefault();
+
+        $('#login-form').toggleClass('hidden');
+        $('#register-form').toggleClass('hidden');
+
+        if (!$('#login-form').hasClass('hidden')) {
+            $('#auth-form-title').text('Welcome Back!');
+            $('.auth-form-toggle').text('Register');
+            $('#register-password').val('');
+            $('#register-confirm-password').val('');
+        } else {
+            $('#auth-form-title').text('Create an Account');
+            $('.auth-form-toggle').text('Login');
+            $('#login-password').val('');
+        }
+    });
+}
+
+export { checkLoginState, initUserEvents, refreshUI, saveAccessToken };

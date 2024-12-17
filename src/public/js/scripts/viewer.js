@@ -1,6 +1,6 @@
 let marketChart;
 
-function initChart(canvasId, data, timeframe) {
+function createChart(canvasId, data, timeframe) {
     const ctx = $('#' + canvasId)[0].getContext('2d');
     const parsedData = parseChartData(data);
 
@@ -154,13 +154,13 @@ function initChart(canvasId, data, timeframe) {
     });
 }
 
-function updateChart(data, timeframe, item) {
+function initChart(data, timeframe, item) {
     const itemBars = data[timeframe]?.bars[item];
     if (!itemBars || itemBars.length < 3) {
-        initChart('market-chart', [], timeframe);
+        createChart('market-chart', [], timeframe);
         return;
     }
-    initChart('market-chart', itemBars, timeframe);
+    createChart('market-chart', itemBars, timeframe);
 }
 
 function parseChartData(bars) {
@@ -189,4 +189,4 @@ function getTimeUnit(timeframe) {
     }
 }
 
-export { updateChart, initChart };
+export { initChart };

@@ -41,6 +41,15 @@ function initTheme() {
     } else {
         disableDarkMode();
     }
+
+    $('#theme-mode-toggle').on('click', function () {
+        if (localStorage.getItem('theme') === 'dark') {
+            disableDarkMode();
+        } else {
+            enableDarkMode();
+        }
+        alert('Coming Soon!');
+    });
 }
 
-export { enableDarkMode, disableDarkMode, initTheme, isDarkMode };
+export { initTheme, isDarkMode };
