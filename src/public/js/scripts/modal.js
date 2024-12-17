@@ -14,7 +14,7 @@ function showModal(modalId) {
         $('#search-options').removeClass('hidden').addClass('flex');
         $('#navbar-items').addClass('hidden');
         $('#brand-name').addClass('hidden');
-        $('#navbar')
+        $('#nav-body')
             .removeClass('justify-between')
             .addClass('justify-center')
             .removeClass('px-4 sm:px-6 lg:px-8');
@@ -37,7 +37,7 @@ function hideModal(modalId) {
         $('#search-options').addClass('hidden').removeClass('flex');
         $('#navbar-items').removeClass('hidden');
         $('#brand-name').removeClass('hidden');
-        $('#navbar')
+        $('#nav-body')
             .addClass('justify-between')
             .removeClass('justify-center')
             .addClass('px-4 sm:px-6 lg:px-8');

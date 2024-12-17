@@ -1,0 +1,36 @@
+<div class="container mx-auto mt-6 px-4">
+    <h1 class="text-2xl font-bold mb-6">Search Results for "<%= query %>"</h1>
+
+    <div class="flex space-x-4 mb-4">
+        <button class="filter-button px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700" data-category="All">
+            All (<%= quotes.length %>)
+        </button>
+        <button class="filter-button px-4 py-2 rounded-md bg-gray-200 text-gray-800 font-semibold hover:bg-blue-100" data-category="Stocks">
+            Stocks (<%= quotes.filter(item => item.category === 'Stocks').length %>)
+        </button>
+        <button class="filter-button px-4 py-2 rounded-md bg-gray-200 text-gray-800 font-semibold hover:bg-blue-100" data-category="Crypto">
+            Crypto (<%= quotes.filter(item => item.category === 'Crypto').length %>)
+        </button>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="grid grid-cols-4 gap-4 font-semibold bg-gray-100 px-4 py-3 border-b border-gray-300">
+            <div>Symbol</div>
+            <div class="border-l border-gray-300 pl-2">Name</div>
+            <div>Sector</div>
+            <div>Type</div>
+        </div>
+        <% if (quotes.length > 0) { %>
+        <% quotes.forEach(item => { %>
+        <a href="/symbol/<%= item.symbol %>" class="filter-item grid grid-cols-4 gap-4 px-4 py-3 hover:bg-blue-50 border-t border-gray-200 transition duration-200" data-category="<%= item.category %>">
+            <span class="font-medium text-blue-600"><%= item.symbol %></span>
+            <span class="border-l border-gray-300 pl-2"><%= item.longname %></span>
+            <span class="font-semibold"><%= item.sector || '--' %></span>
+            <span><%= item.category %></span>
+        </a>
+        <% }) %>
+        <% } else { %>
+        <div class="text-center py-6 text-gray-600 font-semibold">No Results Found for "<%= query %>"</div>
+        <% } %>
+    </div>
+</div>

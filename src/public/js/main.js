@@ -238,7 +238,7 @@ $(function () {
         categoriesContainer.empty();
         marketTypes.forEach((type, index) => {
             const categoryHTML = `
-                <div class="category-tab pb-2 px-4 text-base font-medium cursor-pointer ${index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800'}" data-category="${type}">
+                <div class="market-category-tab pb-2 px-4 text-base font-medium cursor-pointer ${index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800'}" data-category="${type}">
                     ${type.charAt(0).toUpperCase() + type.slice(1)}
                 </div>
             `;
@@ -348,11 +348,11 @@ $(function () {
         }).responseJSON.data;
     }
 
-    $(document).on('click', '.category-tab', function () {
+    $(document).on('click', '.market-category-tab', function () {
         const selectedCategory = $(this).data('category');
         if (selectedCategory === currentCategory) return;
 
-        $('.category-tab')
+        $('.market-category-tab')
             .removeClass('border-b-2 border-blue-600 text-blue-600')
             .addClass('text-gray-600 hover:text-gray-800');
         $(this)

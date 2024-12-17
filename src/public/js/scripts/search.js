@@ -1,115 +1,79 @@
 function updateSearchResults() {
-    const data = {
-        indices: [
-            {
-                symbol: 'DJI',
-                name: 'Dow Jones Industrial Average',
-                market: 'USA',
-            },
-            { symbol: 'SPX', name: 'S&P 500', market: 'USA' },
-            { symbol: 'IXIC', name: 'NASDAQ Composite', market: 'USA' },
-        ],
-        stocks: [
-            { symbol: 'AAPL', name: 'Apple Inc.', market: 'NASDAQ' },
-            { symbol: 'GOOGL', name: 'Alphabet Inc.', market: 'NASDAQ' },
-            { symbol: 'AMZN', name: 'Amazon.com Inc.', market: 'NASDAQ' },
-        ],
-        etfs: [
-            {
-                symbol: 'SPY',
-                name: 'SPDR S&P 500 ETF Trust',
-                market: 'NYSEARCA',
-            },
-            {
-                symbol: 'IVV',
-                name: 'iShares Core S&P 500 ETF',
-                market: 'NYSEARCA',
-            },
-            { symbol: 'VOO', name: 'Vanguard S&P 500 ETF', market: 'NYSEARCA' },
-        ],
-        crypto: [
-            { symbol: 'BTC', name: 'Bitcoin', market: 'Crypto' },
-            { symbol: 'ETH', name: 'Ethereum', market: 'Crypto' },
-            { symbol: 'BNB', name: 'Binance Coin', market: 'Crypto' },
-        ],
-        forex: [
-            { symbol: 'EUR/USD', name: 'Euro/US Dollar', market: 'Forex' },
-            {
-                symbol: 'GBP/USD',
-                name: 'British Pound/US Dollar',
-                market: 'Forex',
-            },
-            {
-                symbol: 'USD/JPY',
-                name: 'US Dollar/Japanese Yen',
-                market: 'Forex',
-            },
-        ],
-        futures: [
-            { symbol: 'ES', name: 'E-mini S&P 500', market: 'CME' },
-            { symbol: 'NQ', name: 'E-mini NASDAQ-100', market: 'CME' },
-            { symbol: 'CL', name: 'Crude Oil', market: 'NYMEX' },
-        ],
-        bonds: [
-            { symbol: 'US10Y', name: 'US 10-Year Treasury', market: 'Bonds' },
-            { symbol: 'US30Y', name: 'US 30-Year Treasury', market: 'Bonds' },
-            { symbol: 'US2Y', name: 'US 2-Year Treasury', market: 'Bonds' },
-        ],
-    };
-
-    const category = $('.search-tab.text-blue-600').data('category');
-
-    let results = [];
-    if (category === 'All') {
-        results = Object.keys(data).reduce(function (acc, key) {
-            return acc.concat(data[key]);
-        }, []);
-    } else {
-        results = data[category.toLowerCase()];
-    }
-
     const current = $('#search-input').val().trim();
-    if (current) {
-        results = results.filter(function (item) {
-            return (
-                item.symbol.toLowerCase().includes(current.toLowerCase()) ||
-                item.name.toLowerCase().includes(current.toLowerCase())
-            );
-        });
-    }
+    const category = $('.search-tab.border-blue-500').data('category');
 
-    $('#search-results').empty();
-    if (results.length === 0) {
-        $('#search-results').append(`
+    if (!current) {
+        $('#search-results').html(`
             <p class="text-center font-medium text-gray-500 py-3">
-                No Symbols Match your Criteria!
+                Type Something to Search!
             </p>
         `);
-    } else {
-        results.forEach(function (item) {
-            const resultItem = `
-                <a href="/symbol/${item.symbol}" class="block">
-                    <div class="p-3 hover:bg-gray-50 rounded-md cursor-pointer">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="font-medium">${item.symbol}</span>
-                                <span class="ml-2 text-gray-500">${item.name}</span>
-                            </div>
-                            <span class="text-gray-500">${item.market}</span>
-                        </div>
-                    </div>
-                </a>
-            `;
-            $('#search-results').append(resultItem);
-        });
+        return;
     }
+
+    $.ajax({
+        url: `/search`,
+        method: 'GET',
+        headers: {
+            Accept: 'application/json',
+        },
+        data: { query: current },
+        success: function (response) {
+            let results = [];
+
+            if (category === 'All') {
+                results = response.quotes;
+            } else {
+                results = response.quotes.filter(function (item) {
+                    return item.category === category;
+                });
+            }
+
+            if (!results || results.length === 0) {
+                $('#search-results').html(`
+                    <p class="text-center font-medium text-gray-500 py-3">
+                        No Symbols Match your Criteria!
+                    </p>
+                `);
+            } else {
+                $('#search-results').empty();
+                results.forEach(function (item) {
+                    const resultItem = `
+                        <a href="/symbol/${item.symbol}" class="block">
+                            <div class="p-3 hover:bg-gray-50 rounded-md cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="font-medium">${item.symbol}</span>
+                                        <span class="ml-2 text-gray-500">${item.shortname}</span>
+                                    </div>
+                                    <span class="text-gray-500">${item.exchDisp}</span>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                    $('#search-results').append(resultItem);
+                });
+            }
+        },
+        error: function () {
+            $('#search-results').html(`
+                <p class="text-center font-medium text-red-500 py-3">
+                    Something Went Wrong! Please Try Again Later.
+                </p>
+            `);
+        },
+    });
 }
+
+$('#search-input').on('input', function () {
+    updateSearchResults();
+});
 
 function initSearchEvents() {
     $('#search-container').on('submit', function (event) {
         const query = $('#search-input').val().trim();
         if (query !== '') {
-            window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            window.location.href = `/search?query=${encodeURIComponent(query)}`;
         } else {
             event.preventDefault();
         }
@@ -120,7 +84,7 @@ function initSearchEvents() {
 
         const query = $('#search-input').val().trim();
         if (query !== '') {
-            window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            window.location.href = `/search?query=${encodeURIComponent(query)}`;
         }
     });
 
@@ -154,6 +118,29 @@ function initSearchEvents() {
 
         updateSearchResults();
     });
+
+    $('.filter-button').on('click', function () {
+        const category = $(this).data('category');
+
+        $('.filter-button')
+            .removeClass('bg-blue-600 text-white hover:bg-blue-700')
+            .addClass('bg-gray-200 text-gray-800 hover:bg-blue-100');
+
+        $(this)
+            .removeClass('bg-gray-200 text-gray-800 hover:bg-blue-100')
+            .addClass('bg-blue-600 text-white hover:bg-blue-700');
+
+        if (category === 'All') {
+            $('.filter-item').show();
+        } else {
+            $('.filter-item')
+                .hide()
+                .filter(`[data-category="${category}"]`)
+                .show();
+        }
+    });
+
+    $('.filter-button[data-category="All"]').trigger('click');
 }
 
 export { updateSearchResults, initSearchEvents as initSearchEvents };
