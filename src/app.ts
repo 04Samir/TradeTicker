@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 
 import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
@@ -46,7 +46,6 @@ const loadRoutes = async () => {
 const startServer = async () => {
     try {
         const connection = await db.getConnection();
-        console.debug('Database Connected!');
         connection.release();
     } catch (error) {
         console.error('Error Connecting to Database!');
@@ -55,12 +54,25 @@ const startServer = async () => {
     }
 
     await loadRoutes();
+
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        const startTime = Date.now();
+
+        res.on('finish', () => {
+            const duration = Date.now() - startTime;
+            const logMessage = `[${new Date().toISOString().replace('T', ' ').split('.')[0]}] - ${req.ip} - "${req.method} ${req.originalUrl} HTTP/${req.httpVersion}" ${res.statusCode} (${duration}ms)`;
+            console.log(logMessage);
+        });
+
+        next();
+    });
+
     app.use(notFoundHandler);
     app.use(errorHandler);
 
-    app.listen(PORT, () =>
-        console.log(`Server is Running at http://localhost:${PORT}`),
-    );
+    app.listen(PORT, () => {
+        console.log(`Server is Running at http://localhost:${PORT}`);
+    });
 };
 
 startServer();
