@@ -9,7 +9,7 @@
     </div>
     <p id="auth-form-error" class="text-sm text-red-500"></p>
 </div>
-<form action="/auth/login" method="POST" class="mt-6 <%= type === 'login' ? '' : 'hidden' %>" id="login-form">
+<form action="<%= basePath %>/auth/login" method="POST" class="mt-6 <%= type === 'login' ? '' : 'hidden' %>" id="login-form">
     <div class="mb-4">
         <label for="login-username" class="block text-sm font-medium text-gray-700">Username</label>
         <input type="text" id="login-username" name="username" class="mt-1 w-full p-2 rounded-md shadow-sm focus:outline-none" placeholder="john_doe" />
@@ -30,7 +30,7 @@
         <a href="#" class="auth-form-toggle text-blue-600 hover:underline">Register Here!</a>
     </p>
 </form>
-<form action="/auth/register" method="POST" class="mt-6 <%= type === 'register' ? '' : 'hidden' %>" id="register-form">
+<form action="<%= basePath %>/auth/register" method="POST" class="mt-6 <%= type === 'register' ? '' : 'hidden' %>" id="register-form">
     <div class="mb-4">
         <label for="register-username" class="block text-sm font-medium text-gray-700">Username</label>
         <input type="text" id="register-username" name="username" class="mt-1 w-full p-2 rounded-md shadow-sm focus:outline-none" placeholder="john_doe" />

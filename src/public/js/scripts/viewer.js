@@ -316,7 +316,7 @@ function initChartEvents() {
 
         function fetchMarketData(type) {
             return $.ajax({
-                url: `/api/markets/${type}/movers`,
+                url: `${window.BASE_PATH}/api/markets/${type}/movers`,
                 type: 'GET',
                 async: false,
                 error: function (xhr) {
@@ -470,7 +470,7 @@ function initChartEvents() {
 
         function fetchSymbolData() {
             return $.ajax({
-                url: `/api/markets/bars?symbols=${symbolTicker}`,
+                url: `${window.BASE_PATH}/api/markets/bars?symbols=${symbolTicker}`,
                 type: 'GET',
                 async: false,
                 error: function (xhr) {
@@ -544,7 +544,7 @@ function initChartEvents() {
 
         function fetchSymbolData() {
             return $.ajax({
-                url: `/api/markets/bars?symbols=${symbols.join(',')}`,
+                url: `${window.BASE_PATH}/api/markets/bars?symbols=${symbols.join(',')}`,
                 type: 'GET',
                 async: false,
                 error: function (xhr) {

@@ -28,11 +28,20 @@ router.get('/', async (req: Request, res: Response) => {
         });
     }
 
-    res.render('layout', { title: 'Home', view: 'index', news });
+    res.render('layout', {
+        basePath: res.locals.basePath,
+        title: 'Home',
+        view: 'index',
+        news,
+    });
 });
 
 router.get('/about', async (req: Request, res: Response) => {
-    res.render('layout', { title: 'About', view: 'about' });
+    res.render('layout', {
+        basePath: res.locals.basePath,
+        title: 'About',
+        view: 'about',
+    });
 });
 
 router.get('/search', async (req: Request, res: Response) => {
@@ -46,6 +55,7 @@ router.get('/search', async (req: Request, res: Response) => {
             },
             html: () => {
                 res.render('layout', {
+                    basePath: res.locals.basePath,
                     title: 'Search',
                     view: 'search',
                     query: '',
@@ -95,6 +105,7 @@ router.get('/search', async (req: Request, res: Response) => {
             },
             html: () => {
                 res.render('layout', {
+                    basePath: res.locals.basePath,
                     title: 'Search',
                     view: 'search',
                     query,
@@ -111,6 +122,7 @@ router.get('/symbol/:symbol', async (req: Request, res: Response) => {
     if (!symbol) {
         res.status(400);
         return res.render('layout', {
+            basePath: res.locals.basePath,
             title: 'Symbol',
             view: 'symbol',
             symbol: {},
@@ -129,6 +141,7 @@ router.get('/symbol/:symbol', async (req: Request, res: Response) => {
     if (symbolResp.status !== 200) {
         res.status(404);
         return res.render('layout', {
+            basePath: res.locals.basePath,
             title: 'Symbol',
             view: 'symbol',
             symbol: {},
@@ -139,6 +152,7 @@ router.get('/symbol/:symbol', async (req: Request, res: Response) => {
     if (symbolResp.data.quoteType.result.length === 0) {
         res.status(404);
         return res.render('layout', {
+            basePath: res.locals.basePath,
             title: 'Symbol',
             view: 'symbol',
             symbol: {},
@@ -192,6 +206,7 @@ router.get('/symbol/:symbol', async (req: Request, res: Response) => {
     }
 
     res.render('layout', {
+        basePath: res.locals.basePath,
         title: actualSymbol.symbol,
         view: 'symbol',
         symbol: actualSymbol,
@@ -200,4 +215,4 @@ router.get('/symbol/:symbol', async (req: Request, res: Response) => {
     });
 });
 
-export default { router, path: '/' };
+export default { router, path: '' };

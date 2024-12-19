@@ -9,7 +9,7 @@ const router = Router();
 router.use(isAuthenticated);
 
 router.get('/', async (req: Request, res: Response) => {
-    return res.redirect('/@me/dashboard');
+    return res.redirect(`${res.locals.basePath}/@me/dashboard`);
 });
 
 router.get('/dashboard', async (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     );
 
     if (!Array.isArray(userRows) || userRows.length === 0) {
-        return res.redirect('/auth/logout');
+        return res.redirect(`${res.locals.basePath}/auth/logout`);
     }
 
     const user = userRows[0] as any;
@@ -32,6 +32,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     const watchlist = Array.isArray(watchlistRows) ? watchlistRows : [];
 
     return res.render('layout', {
+        basePath: res.locals.basePath,
         title: 'Dashboard',
         view: 'dashboard',
         username: user.Username,

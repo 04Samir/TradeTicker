@@ -1,5 +1,4 @@
 <div class="flex h-screen">
-    <!-- Responsive Navbar -->
     <nav class="w-64 bg-gray-800 text-white h-full flex-shrink-0 hidden md:block">
         <ul class="mt-6">
             <li>
@@ -16,17 +15,17 @@
                 <h3 class="px-6 py-2 text-gray-400 uppercase text-sm font-bold">Account</h3>
                 <ul>
                     <li>
-                        <a href="/@me/profile" class="block px-6 py-3 text-sm hover:bg-gray-700 rounded-md">
+                        <a href="<%= basePath %>/@me/profile" class="block px-6 py-3 text-sm hover:bg-gray-700 rounded-md">
                             Profile
                         </a>
                     </li>
                     <li>
-                        <a href="/@me/security" class="block px-6 py-3 text-sm hover:bg-gray-700 rounded-md">
+                        <a href="<%= basePath %>/@me/security" class="block px-6 py-3 text-sm hover:bg-gray-700 rounded-md">
                             Security
                         </a>
                     </li>
                     <li>
-                        <a href="/@me/information" class="block px-6 py-3 text-sm hover:bg-gray-700 rounded-md">
+                        <a href="<%= basePath %>/@me/information" class="block px-6 py-3 text-sm hover:bg-gray-700 rounded-md">
                             Information
                         </a>
                     </li>
@@ -43,7 +42,7 @@
         <div class="px-6 py-4 text-gray-800">
             <h3 class="text-xl font-semibold">Welcome Back, <%= username.toUpperCase() %>!</h3>
             <p class="text-xs text-gray-500 mt-1">
-                Not You? <a href="/auth/logout" class="text-blue-500 hover:underline">Logout</a>
+                Not You? <a href="<%= basePath %>/auth/logout" class="text-blue-500 hover:underline">Logout</a>
             </p>
         </div>
 

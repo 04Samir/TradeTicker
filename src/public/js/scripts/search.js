@@ -12,7 +12,7 @@ function updateSearchResults() {
     }
 
     $.ajax({
-        url: `/search`,
+        url: `${window.BASE_PATH}/search`,
         method: 'GET',
         headers: {
             Accept: 'application/json',
@@ -39,7 +39,7 @@ function updateSearchResults() {
                 $('#search-results').empty();
                 results.forEach(function (item) {
                     const resultItem = `
-                        <a href="/symbol/${item.symbol}" class="block">
+                        <a href="${window.BASE_PATH}/symbol/${item.symbol}" class="block">
                             <div class="p-3 hover:bg-gray-50 rounded-md cursor-pointer">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -74,7 +74,7 @@ function initSearchEvents() {
     $('#search-container').on('submit', function (event) {
         const query = $('#search-input').val().trim();
         if (query !== '') {
-            window.location.href = `/search?query=${encodeURIComponent(query)}`;
+            window.location.href = `${window.BASE_PATH}/search?query=${encodeURIComponent(query)}`;
         } else {
             event.preventDefault();
         }
@@ -85,7 +85,7 @@ function initSearchEvents() {
 
         const query = $('#search-input').val().trim();
         if (query !== '') {
-            window.location.href = `/search?query=${encodeURIComponent(query)}`;
+            window.location.href = `${window.BASE_PATH}/search?query=${encodeURIComponent(query)}`;
         }
     });
 
