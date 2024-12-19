@@ -54,9 +54,13 @@ const startServer = async () => {
         return;
     }
 
-    app.use((req: Request, res: Response, next: NextFunction) => {
+    app.use((req, res, next) => {
         res.locals.basePath = basePath;
-        next();
+        if (req.path === basePath && !req.path.endsWith('/')) {
+            res.redirect(301, `${req.path}/`);
+        } else {
+            next();
+        }
     });
 
     app.use(basePath, (req: Request, res: Response, next: NextFunction) => {
