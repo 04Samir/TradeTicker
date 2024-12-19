@@ -1,6 +1,9 @@
-CREATE USER IF NOT EXISTS 'appUserTT'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'passWord';
-GRANT ALL PRIVILEGES ON *.* TO 'appUserTT'@'localhost' WITH GRANT OPTION;
+CREATE USER IF NOT EXISTS 'appUserTT'@'127.0.0.1' IDENTIFIED WITH 'mysql_native_password' BY 'passWord';
+CREATE USER IF NOT EXISTS 'appUserTT'@'%' IDENTIFIED WITH 'mysql_native_password' BY 'passWord';
+GRANT ALL PRIVILEGES ON *.* TO 'appUserTT'@'127.0.0.1' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'appUserTT'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
+
 
 DROP DATABASE IF EXISTS trade_ticker;
 CREATE DATABASE trade_ticker;
