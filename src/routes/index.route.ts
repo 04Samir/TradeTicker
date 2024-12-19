@@ -215,4 +215,4 @@ router.get('/symbol/:symbol', async (req: Request, res: Response) => {
     });
 });
 
-export default { router, path: '/' };
+export default { router, path: '' };
