@@ -37,7 +37,7 @@ $(function () {
         if (!loggedIn) {
             showModal('user-modal');
         } else {
-            location.href = '/@me';
+            location.href = `${window.BASE_PATH}/@me`;
         }
     });
 
@@ -73,7 +73,7 @@ $(function () {
                 const redirect = new URLSearchParams(
                     window.location.search,
                 ).get('redirect');
-                location.href = redirect || '/@me';
+                location.href = redirect || `${window.BASE_PATH}/@me`;
             },
             error: function (xhr) {
                 $('#auth-form-error').text(xhr.responseJSON?.error?.message);
@@ -150,7 +150,7 @@ $(function () {
         }
 
         const symbol = $(this).data('ticker');
-        const URL = `/api/@me/watchlist/${symbol}`;
+        const URL = `${window.BASE_PATH}/api/@me/watchlist/${symbol}`;
         const METHOD = 'PUT';
 
         $.ajax({

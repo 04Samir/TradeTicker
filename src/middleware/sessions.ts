@@ -62,7 +62,7 @@ export const isAuthenticated = async (
             json: () => responder.error(res, 401),
             html: () =>
                 res.redirect(
-                    `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                    `${res.locals.basePath}/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                 ),
         });
     }
@@ -81,7 +81,7 @@ export const isAuthenticated = async (
                 json: () => responder.error(res, 401),
                 html: () =>
                     res.redirect(
-                        `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                        `${res.locals.basePath}/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                     ),
             });
         }
@@ -93,7 +93,7 @@ export const isAuthenticated = async (
                 json: () => responder.error(res, 401),
                 html: () =>
                     res.redirect(
-                        `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                        `${res.locals.basePath}/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                     ),
             });
         }
@@ -106,7 +106,7 @@ export const isAuthenticated = async (
             json: () => responder.error(res, 401),
             html: () =>
                 res.redirect(
-                    `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
+                    `${res.locals.basePath}/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                 ),
         });
     }

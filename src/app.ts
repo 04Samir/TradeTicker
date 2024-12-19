@@ -11,6 +11,7 @@ import { errorHandler, notFoundHandler } from './utils';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const basePath = process.env.BASE_PATH || '';
 
 app.use(cookieParser());
 
@@ -27,7 +28,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use(express.static(path.resolve(__dirname, '../dist/public')));
+app.use(basePath, express.static(path.resolve(__dirname, '../dist/public')));
 app.set('views', path.resolve(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -37,7 +38,7 @@ const loadRoutes = async () => {
             if (file.endsWith('.route.ts') || file.endsWith('.route.js')) {
                 const routeModule = await import(`./routes/${file}`);
                 const { router, path: routePath } = routeModule.default;
-                app.use(routePath, router);
+                app.use(`${basePath}${routePath}`, router);
             }
         }),
     );
@@ -54,6 +55,11 @@ const startServer = async () => {
     }
 
     app.use((req: Request, res: Response, next: NextFunction) => {
+        res.locals.basePath = basePath;
+        next();
+    });
+
+    app.use(basePath, (req: Request, res: Response, next: NextFunction) => {
         const startTime = Date.now();
 
         res.on('finish', () => {
@@ -67,8 +73,8 @@ const startServer = async () => {
 
     await loadRoutes();
 
-    app.use(notFoundHandler);
-    app.use(errorHandler);
+    app.use(basePath, notFoundHandler);
+    app.use(basePath, errorHandler);
 
     app.listen(PORT, () => {
         console.log(`Server is Running at http://localhost:${PORT}`);

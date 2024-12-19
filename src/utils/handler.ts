@@ -42,6 +42,7 @@ export const errorHandler = (
         html: () => {
             res.type('html');
             return res.render('layout', {
+                basePath: res.locals.basePath,
                 title: statusCode,
                 view: 'error',
                 statusCode,

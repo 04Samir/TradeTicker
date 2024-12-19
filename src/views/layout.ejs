@@ -8,14 +8,14 @@
         <%= title %> | TradeTicker
     </title>
 
-    <link rel="icon" href="/img/favicon/favicon.ico" type="image/x-icon" />
-    <link rel="icon" href="/img/favicon/android-chrome-192x192.png" sizes="192x192" />
-    <link rel="icon" href="/img/favicon/android-chrome-512x512.png" sizes="512x512" />
-    <link rel="apple-touch-icon" href="/img/favicon/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="<%= basePath %>/img/favicon/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="<%= basePath %>/img/favicon/android-chrome-192x192.png" sizes="192x192" />
+    <link rel="icon" href="<%= basePath %>/img/favicon/android-chrome-512x512.png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="<%= basePath %>/img/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="<%= basePath %>/site.webmanifest" />
 
-    <link rel="stylesheet" href="/css/lib/tailwind.css" />
-    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="<%= basePath %>/css/lib/tailwind.css" />
+    <link rel="stylesheet" href="<%= basePath %>/css/styles.css" />
 </head>
 
 <body class="min-h-screen bg-gray-50 flex flex-col">
@@ -49,10 +49,13 @@
     <%- include('components/footer') %>
     <% } %>
 
-    <script src="/js/lib/jquery.min.js"></script>
-    <script src="/js/lib/chart.umd.min.js" type="module"></script>
-    <script src="/js/lib/chartjs-adapter-date-fns.min.js" type="module"></script>
-    <script src="/js/main.js" type="module"></script>
+    <script type='text/javascript'>
+        window.BASE_PATH = '<%= basePath %>';
+    </script>
+    <script src="<%= basePath %>/js/lib/jquery.min.js"></script>
+    <script src="<%= basePath %>/js/lib/chart.umd.min.js" type="module"></script>
+    <script src="<%= basePath %>/js/lib/chartjs-adapter-date-fns.min.js" type="module"></script>
+    <script src="<%= basePath %>/js/main.js" type="module"></script>
     <script>
         $(document).ready(function() {
             const hcaptchaScript = $('<script>', {

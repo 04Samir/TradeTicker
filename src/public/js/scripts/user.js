@@ -27,7 +27,7 @@ function checkLoginState() {
     const token = getAccessToken();
     if (token) {
         return $.ajax({
-            url: '/api/@me',
+            url: `${window.BASE_PATH}/api/@me`,
             type: 'GET',
             headers: { Authorization: `Bearer ${token}` },
             success: function () {
@@ -45,7 +45,7 @@ function checkLoginState() {
 
 function refreshAccessToken() {
     $.ajax({
-        url: '/api/auth/refresh',
+        url: `${window.BASE_PATH}/api/auth/refresh`,
         type: 'POST',
         success: function (data) {
             if (data.access_token) {
@@ -158,13 +158,22 @@ function checkFormValidity(formId) {
 }
 
 function initUserEvents() {
-    validateField('login-username', '/auth/validate/username');
+    validateField(
+        'login-username',
+        `${window.BASE_PATH}/auth/validate/username`,
+    );
     validateNonAjaxField('login-password', (value) => ({
         isValid: !!value,
         message: 'Password Cannot be Empty',
     }));
-    validateField('register-username', '/auth/validate/username');
-    validateField('register-password', '/auth/validate/password');
+    validateField(
+        'register-username',
+        `${window.BASE_PATH}/auth/validate/username`,
+    );
+    validateField(
+        'register-password',
+        `${window.BASE_PATH}/auth/validate/password`,
+    );
     validateConfirmPassword('register-confirm-password', 'register-password');
 
     $('.auth-form-toggle').on('click', function (event) {

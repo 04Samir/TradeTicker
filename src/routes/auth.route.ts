@@ -12,13 +12,13 @@ const PEPPER = process.env.AUTH_PEPPER as string;
 
 router.get('/', async (req: Request, res: Response) => {
     if (req.session?.user) {
-        return res.redirect('/@me');
+        return res.redirect(`${res.locals.basePath}/@me`);
     }
 
     res.render('layout', {
+        basePath: res.locals.basePath,
         title: 'Auth',
         view: 'auth',
-
         type: 'login',
         nav: false,
         footer: false,
