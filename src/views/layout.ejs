@@ -4,9 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-        <%= title %> | TradeTicker
-    </title>
+    <title><%= title %> | TradeTicker</title>
 
     <link rel="icon" href="<%= basePath %>/img/favicon/favicon.ico" type="image/x-icon" />
     <link rel="icon" href="<%= basePath %>/img/favicon/android-chrome-192x192.png" sizes="192x192" />
@@ -16,6 +14,19 @@
 
     <link rel="stylesheet" href="<%= basePath %>/css/lib/tailwind.css" />
     <link rel="stylesheet" href="<%= basePath %>/css/styles.css" />
+
+    <meta property="og:title" content="TradeTicker | Samir's Projects" />
+    <meta property="og:description" content="<%= title %> | TradeTicker" />
+    <meta property="og:image" content="<%= basePath %>/img/favicon/android-chrome-192x192.png" />
+    <meta property="og:url" content="https://projects.samir.cx/TradeTicker" />
+    <meta property="og:type" content="website" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TradeTicker | Samir's Projects" />
+    <meta name="twitter:description" content="<%= title %> | TradeTicker" />
+    <meta name="twitter:image" content="<%= basePath %>/img/favicon/android-chrome-192x192.png" />
+
+    <meta name="description" content="<%= title %> | TradeTicker" />
 </head>
 
 <body class="min-h-screen bg-gray-50 flex flex-col">
