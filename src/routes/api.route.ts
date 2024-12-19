@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 
 import { db } from '../database';
 import { isAuthenticated, refreshToken } from '../middleware';
-import { HTTPError, json, markets } from '../utils';
+import { HTTPError, markets, responder } from '../utils';
 
 const router = Router();
 
@@ -198,9 +198,9 @@ router.post('/auth/refresh', refreshToken);
 
 router.get('/@me', async (req: Request, res: Response) => {
     if (req.session?.user) {
-        return json.respond(res, 200, { user: req.session.user });
+        return responder.send(res, 200, { user: req.session.user });
     } else {
-        return json.error(res, 401);
+        return responder.error(res, 401);
     }
 });
 
@@ -212,7 +212,7 @@ router.get(
             'SELECT Symbol FROM Watchlist WHERE UserID = ?',
             [req.session!.user.id],
         );
-        return json.respond(res, 200, { watchlist: rows });
+        return responder.send(res, 200, { watchlist: rows });
     },
 );
 
@@ -227,14 +227,16 @@ router.post(
             [req.session!.user.id, symbol],
         );
         if (Array.isArray(rows) && rows.length > 0) {
-            return json.respond(res, 200, { message: 'Already in Watchlist' });
+            return responder.send(res, 200, {
+                message: 'Already in Watchlist',
+            });
         }
 
         await db.query('INSERT INTO Watchlist (UserID, Symbol) VALUES (?, ?)', [
             req.session!.user.id,
             symbol,
         ]);
-        return json.respond(res, 201, { message: 'Added to Watchlist' });
+        return responder.send(res, 201, { message: 'Added to Watchlist' });
     },
 );
 
@@ -253,7 +255,7 @@ router.put(
                 'DELETE FROM Watchlist WHERE UserID = ? AND Symbol = ?',
                 [req.session!.user.id, symbol],
             );
-            return json.respond(res, 200, {
+            return responder.send(res, 200, {
                 message: 'Removed from Watchlist',
             });
         } else {
@@ -261,7 +263,9 @@ router.put(
                 'INSERT INTO Watchlist (UserID, Symbol) VALUES (?, ?)',
                 [req.session!.user.id, symbol],
             );
-            return json.respond(res, 201, { message: 'Added to Watchlist' });
+            return responder.send(res, 201, {
+                message: 'Added to Watchlist',
+            });
         }
     },
 );
@@ -277,14 +281,16 @@ router.delete(
             [req.session!.user.id, symbol],
         );
         if (!Array.isArray(rows) || rows.length === 0) {
-            return json.respond(res, 200, { message: 'Not in Watchlist' });
+            return responder.send(res, 200, { message: 'Not in Watchlist' });
         }
 
         await db.query(
             'DELETE FROM Watchlist WHERE UserID = ? AND Symbol = ?',
             [req.session!.user.id, symbol],
         );
-        return json.respond(res, 200, { message: 'Removed from Watchlist' });
+        return responder.send(res, 200, {
+            message: 'Removed from Watchlist',
+        });
     },
 );
 
@@ -309,14 +315,14 @@ router.get('/markets/:type/movers', async (req: Request, res: Response) => {
             stockEndDate,
         );
 
-        return json.respond(res, 200, { data: stockData });
+        return responder.send(res, 200, { data: stockData });
     } else if (type.toLowerCase() === 'crypto') {
         const cryptoSymbols = ['BTC/USD', 'ETH/USD', 'DOGE/USD'];
 
         const cryptoData = await fetchSymbolBars(cryptoSymbols, 'crypto');
-        return json.respond(res, 200, { data: cryptoData });
+        return responder.send(res, 200, { data: cryptoData });
     } else {
-        return json.error(res, 400, 'Invalid Market Type');
+        return responder.error(res, 400, 'Invalid Market Type');
     }
 });
 
@@ -325,7 +331,7 @@ router.get('/markets/news', async (req: Request, res: Response) => {
     const amt = parseInt(amount as string);
 
     if (isNaN(amt) || amt <= 0) {
-        return json.error(res, 400, 'Invalid Amount Query');
+        return responder.error(res, 400, 'Invalid Amount Query');
     }
 
     const start = new Date(
@@ -388,7 +394,7 @@ router.get('/markets/news', async (req: Request, res: Response) => {
         ];
     }
 
-    return json.respond(res, 200, {
+    return responder.send(res, 200, {
         data: { news: news.slice(0, amt) },
     });
 });
@@ -397,13 +403,13 @@ router.get('/markets/bars', async (req: Request, res: Response) => {
     const { symbols } = req.query;
 
     if (!symbols) {
-        return json.error(res, 400, 'Symbols are Required');
+        return responder.error(res, 400, 'Symbols are Required');
     }
 
     const symbolList = (symbols as string).split(',').map((s) => s.trim());
 
     if (symbolList.length === 0) {
-        return json.error(res, 400, 'Invalid Symbols Provided');
+        return responder.error(res, 400, 'Invalid Symbols Provided');
     }
 
     const symbolData: Record<string, any> = {};
@@ -439,10 +445,10 @@ router.get('/markets/bars', async (req: Request, res: Response) => {
     }
 
     if (Object.keys(symbolData).length === 0) {
-        return json.error(res, 404, 'No Symbol Data Found');
+        return responder.error(res, 404, 'No Symbol Data Found');
     }
 
-    return json.respond(res, 200, { data: symbolData });
+    return responder.send(res, 200, { data: symbolData });
 });
 
 export default { router, path: '/api' };

@@ -3,7 +3,7 @@ import { Request, Response, Router } from 'express';
 import { formatDistanceToNow } from 'date-fns';
 
 import { db } from '../database';
-import { HTTPError, json, local, yahoo } from '../utils';
+import { HTTPError, local, responder, yahoo } from '../utils';
 
 const router = Router();
 
@@ -42,7 +42,7 @@ router.get('/search', async (req: Request, res: Response) => {
         res.status(400);
         return res.format({
             json: () => {
-                json.respond(res, 400, { message: 'Query is required' });
+                responder.send(res, 400, { message: 'Query is required' });
             },
             html: () => {
                 res.render('layout', {
@@ -91,7 +91,7 @@ router.get('/search', async (req: Request, res: Response) => {
         res.status(200);
         return res.format({
             json: () => {
-                json.respond(res, 200, { quotes });
+                responder.send(res, 200, { quotes });
             },
             html: () => {
                 res.render('layout', {

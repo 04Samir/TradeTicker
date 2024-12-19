@@ -38,10 +38,10 @@ const DEFAULT_ERROR_MESSAGES: ErrorMessages = {
     },
 };
 
-export const json = {
+export const responder = {
     ERROR_MESSAGES: DEFAULT_ERROR_MESSAGES,
 
-    respond: (
+    send: (
         res: Response,
         code: number,
         extra?: Record<string, any>,
@@ -63,6 +63,6 @@ export const json = {
             error.message = message;
         }
 
-        return json.respond(res, code, { error });
+        return responder.send(res, code, { error });
     },
 };

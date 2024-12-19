@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 
 import { db } from '../database';
 import { isAuthenticated } from '../middleware';
-import { json } from '../utils';
+import { responder } from '../utils';
 
 const router = Router();
 
@@ -40,15 +40,15 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 });
 
 router.get('/profile', async (req: Request, res: Response) => {
-    return json.error(res, 501);
+    return responder.error(res, 501);
 });
 
 router.get('/security', async (req: Request, res: Response) => {
-    return json.error(res, 501);
+    return responder.error(res, 501);
 });
 
 router.get('/information', async (req: Request, res: Response) => {
-    return json.error(res, 501);
+    return responder.error(res, 501);
 });
 
 export default { router, path: '/@me' };

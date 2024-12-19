@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { json } from './responder';
+import { responder } from './responder';
 
 export interface HTTPError extends Error {
     status?: number;
@@ -27,11 +27,11 @@ export const errorHandler = (
     const statusCode = error.status || 500;
     let message =
         error.message ||
-        json.ERROR_MESSAGES[statusCode]?.message ||
-        json.ERROR_MESSAGES[500].message;
+        responder.ERROR_MESSAGES[statusCode]?.message ||
+        responder.ERROR_MESSAGES[500].message;
 
     if (statusCode === 500) {
-        message = json.ERROR_MESSAGES[500].message;
+        message = responder.ERROR_MESSAGES[500].message;
         console.error(error);
     }
 
@@ -39,7 +39,7 @@ export const errorHandler = (
     res.format({
         json: () => {
             res.type('json');
-            json.error(res, statusCode, message);
+            responder.error(res, statusCode, message);
         },
         default: () => {
             res.type('txt');

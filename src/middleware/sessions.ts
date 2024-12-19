@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { db } from '../database';
-import { json } from '../utils';
+import { responder } from '../utils';
 
 const ACCESS_SECRET = process.env.ACCESS_SECRET as string;
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
@@ -59,7 +59,7 @@ export const isAuthenticated = async (
     if (!token) {
         res.status(401);
         return res.format({
-            json: () => json.error(res, 401),
+            json: () => responder.error(res, 401),
             html: () =>
                 res.redirect(
                     `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
@@ -78,7 +78,7 @@ export const isAuthenticated = async (
         if (!Array.isArray(rows) || rows.length === 0) {
             res.status(401);
             return res.format({
-                json: () => json.error(res, 401),
+                json: () => responder.error(res, 401),
                 html: () =>
                     res.redirect(
                         `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
@@ -90,7 +90,7 @@ export const isAuthenticated = async (
         if (user.version !== payload.version) {
             res.status(401);
             return res.format({
-                json: () => json.error(res, 401),
+                json: () => responder.error(res, 401),
                 html: () =>
                     res.redirect(
                         `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
@@ -103,7 +103,7 @@ export const isAuthenticated = async (
     } catch {
         res.status(401);
         return res.format({
-            json: () => json.error(res, 401),
+            json: () => responder.error(res, 401),
             html: () =>
                 res.redirect(
                     `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
@@ -115,7 +115,7 @@ export const isAuthenticated = async (
 export const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies[REFRESH_COOKIE];
     if (!refreshToken) {
-        return json.error(res, 401, 'Refresh Token Required');
+        return responder.error(res, 401, 'Refresh Token Required');
     }
 
     try {
@@ -130,7 +130,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         );
 
         if (!Array.isArray(rows) || rows.length === 0) {
-            return json.error(res, 401, 'Invalid Refresh Token');
+            return responder.error(res, 401, 'Invalid Refresh Token');
         }
 
         const session = rows[0] as any;
@@ -140,12 +140,12 @@ export const refreshToken = async (req: Request, res: Response) => {
             [payload.id],
         );
         if (!Array.isArray(userRows) || userRows.length === 0) {
-            return json.error(res, 401, 'User Not Found');
+            return responder.error(res, 401, 'User Not Found');
         }
 
         const user = userRows[0] as any;
         if (user.version !== Number(payload.version)) {
-            return json.error(res, 401, 'Token Version Mismatch');
+            return responder.error(res, 401, 'Token Version Mismatch');
         }
 
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(
@@ -165,9 +165,9 @@ export const refreshToken = async (req: Request, res: Response) => {
             sameSite: 'strict',
         });
 
-        json.respond(res, 201, { accessToken });
+        responder.send(res, 201, { accessToken });
     } catch {
-        return json.error(res, 401, 'Invalid or expired refresh token.');
+        return responder.error(res, 401, 'Invalid or expired refresh token.');
     }
 };
 
