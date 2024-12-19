@@ -26,9 +26,7 @@ export const errorHandler = (
 ) => {
     const statusCode = error.status || 500;
     let message =
-        error.message ||
-        responder.ERROR_MESSAGES[statusCode]?.message ||
-        responder.ERROR_MESSAGES[500].message;
+        error.message || responder.ERROR_MESSAGES[statusCode]?.message;
 
     if (statusCode === 500) {
         message = responder.ERROR_MESSAGES[500].message;
@@ -40,6 +38,16 @@ export const errorHandler = (
         json: () => {
             res.type('json');
             responder.error(res, statusCode, message);
+        },
+        html: () => {
+            res.type('html');
+            return res.render('layout', {
+                title: statusCode,
+                view: 'error',
+                statusCode,
+                short: responder.ERROR_MESSAGES[statusCode]?.status,
+                long: responder.ERROR_MESSAGES[statusCode]?.message,
+            });
         },
         default: () => {
             res.type('txt');
