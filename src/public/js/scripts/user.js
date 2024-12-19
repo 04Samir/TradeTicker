@@ -33,7 +33,8 @@ function checkLoginState() {
             success: function () {
                 return refreshUI(true);
             },
-            error: function () {
+            error: function (xhr) {
+                console.error(xhr.responseJSON?.error?.message);
                 return refreshAccessToken();
             },
         });
@@ -46,15 +47,16 @@ function refreshAccessToken() {
     $.ajax({
         url: '/api/auth/refresh',
         type: 'POST',
-        success: function (response) {
-            if (response.access_token) {
-                saveAccessToken(response.access_token);
+        success: function (data) {
+            if (data.access_token) {
+                saveAccessToken(data.access_token);
                 return refreshUI(true);
             } else {
                 return refreshUI(false);
             }
         },
-        error: function () {
+        error: function (xhr) {
+            console.error(xhr.responseJSON?.error?.message);
             localStorage.removeItem('access_token');
             return refreshUI(false);
         },

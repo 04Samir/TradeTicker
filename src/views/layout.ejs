@@ -49,11 +49,20 @@
     <%- include('components/footer') %>
     <% } %>
 
-    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <script src="/js/lib/jquery.min.js"></script>
     <script src="/js/lib/chart.umd.min.js" type="module"></script>
     <script src="/js/lib/chartjs-adapter-date-fns.min.js" type="module"></script>
     <script src="/js/main.js" type="module"></script>
+    <script>
+        $(document).ready(function() {
+            const hcaptchaScript = $('<script>', {
+                src: 'https://js.hcaptcha.com/1/api.js',
+                async: true,
+                defer: true
+            });
+            $('head').append(hcaptchaScript);
+        });
+    </script>
 </body>
 
 </html>

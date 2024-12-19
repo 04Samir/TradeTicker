@@ -53,8 +53,6 @@ const startServer = async () => {
         return;
     }
 
-    await loadRoutes();
-
     app.use((req: Request, res: Response, next: NextFunction) => {
         const startTime = Date.now();
 
@@ -66,6 +64,8 @@ const startServer = async () => {
 
         next();
     });
+
+    await loadRoutes();
 
     app.use(notFoundHandler);
     app.use(errorHandler);

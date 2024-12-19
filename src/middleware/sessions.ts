@@ -8,7 +8,7 @@ import { json } from '../utils';
 const ACCESS_SECRET = process.env.ACCESS_SECRET as string;
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
 
-const ACCESS_TOKEN_EXPIRY = '15m';
+const ACCESS_TOKEN_EXPIRY = '15m'; // TODO: Change
 
 const REFRESH_COOKIE = 'refresh_token';
 
@@ -59,11 +59,11 @@ export const isAuthenticated = async (
     if (!token) {
         res.status(401);
         return res.format({
+            json: () => json.error(res, 401),
             html: () =>
                 res.redirect(
                     `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                 ),
-            json: () => json.error(res, 401),
         });
     }
 
@@ -78,11 +78,11 @@ export const isAuthenticated = async (
         if (!Array.isArray(rows) || rows.length === 0) {
             res.status(401);
             return res.format({
+                json: () => json.error(res, 401),
                 html: () =>
                     res.redirect(
                         `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                     ),
-                json: () => json.error(res, 401),
             });
         }
 
@@ -90,11 +90,11 @@ export const isAuthenticated = async (
         if (user.version !== payload.version) {
             res.status(401);
             return res.format({
+                json: () => json.error(res, 401),
                 html: () =>
                     res.redirect(
                         `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                     ),
-                json: () => json.error(res, 401),
             });
         }
 
@@ -103,11 +103,11 @@ export const isAuthenticated = async (
     } catch {
         res.status(401);
         return res.format({
+            json: () => json.error(res, 401),
             html: () =>
                 res.redirect(
                     `/auth?redirect=${encodeURIComponent(req.originalUrl)}`,
                 ),
-            json: () => json.error(res, 401),
         });
     }
 };
@@ -165,7 +165,7 @@ export const refreshToken = async (req: Request, res: Response) => {
             sameSite: 'strict',
         });
 
-        json.respond(res, 200, { accessToken });
+        json.respond(res, 201, { accessToken });
     } catch {
         return json.error(res, 401, 'Invalid or expired refresh token.');
     }

@@ -10,7 +10,7 @@ const router = Router();
 
 const PEPPER = process.env.AUTH_PEPPER as string;
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
     if (req.session?.user) {
         return res.redirect('/@me');
     }
@@ -25,7 +25,7 @@ router.get('/', (req: Request, res: Response) => {
     });
 });
 
-router.post('/validate/username', (req: Request, res: Response) => {
+router.post('/validate/username', async (req: Request, res: Response) => {
     const { username } = req.body;
 
     if (!username) {
@@ -61,7 +61,7 @@ router.post('/validate/username', (req: Request, res: Response) => {
     return json.respond(res, 200);
 });
 
-router.post('/validate/password', (req: Request, res: Response) => {
+router.post('/validate/password', async (req: Request, res: Response) => {
     const { password } = req.body;
 
     if (!password) {
@@ -246,7 +246,7 @@ router.post('/login', async (req: Request, res: Response) => {
             user.Version,
         );
 
-        return json.respond(res, 200, {
+        return json.respond(res, 201, {
             message: 'Login Successful',
             access_token: accessToken,
         });

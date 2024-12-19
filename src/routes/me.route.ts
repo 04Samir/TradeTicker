@@ -1,12 +1,54 @@
 import { Request, Response, Router } from 'express';
 
+import { db } from '../database';
 import { isAuthenticated } from '../middleware';
 import { json } from '../utils';
 
 const router = Router();
 
-router.get('/', isAuthenticated, async (req: Request, res: Response) => {
-    return json.respond(res, 200, req.session!.user);
+router.use(isAuthenticated);
+
+router.get('/', async (req: Request, res: Response) => {
+    return res.redirect('/@me/dashboard');
+});
+
+router.get('/dashboard', async (req: Request, res: Response) => {
+    const [userRows] = await db.query(
+        'SELECT Username FROM Users WHERE ID = ?',
+        [req.session!.user.id],
+    );
+
+    if (!Array.isArray(userRows) || userRows.length === 0) {
+        return res.redirect('/auth/logout');
+    }
+
+    const user = userRows[0] as any;
+
+    const [watchlistRows] = await db.query(
+        'SELECT Symbol FROM Watchlist WHERE UserID = ? ORDER BY CreatedAt DESC',
+        [req.session!.user.id],
+    );
+
+    const watchlist = Array.isArray(watchlistRows) ? watchlistRows : [];
+
+    return res.render('layout', {
+        title: 'Dashboard',
+        view: 'dashboard',
+        username: user.Username,
+        watchlist,
+    });
+});
+
+router.get('/profile', async (req: Request, res: Response) => {
+    return json.error(res, 501);
+});
+
+router.get('/security', async (req: Request, res: Response) => {
+    return json.error(res, 501);
+});
+
+router.get('/information', async (req: Request, res: Response) => {
+    return json.error(res, 501);
 });
 
 export default { router, path: '/@me' };

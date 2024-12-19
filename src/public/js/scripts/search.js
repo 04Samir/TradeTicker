@@ -18,13 +18,13 @@ function updateSearchResults() {
             Accept: 'application/json',
         },
         data: { query: current },
-        success: function (response) {
+        success: function (data) {
             let results = [];
 
             if (category === 'All') {
-                results = response.quotes;
+                results = data.quotes;
             } else {
-                results = response.quotes.filter(function (item) {
+                results = data.quotes.filter(function (item) {
                     return item.category === category;
                 });
             }
@@ -55,7 +55,8 @@ function updateSearchResults() {
                 });
             }
         },
-        error: function () {
+        error: function (xhr) {
+            console.error(xhr.responseJSON?.error?.message);
             $('#search-results').html(`
                 <p class="text-center font-medium text-red-500 py-3">
                     Something Went Wrong! Please Try Again Later.

@@ -32,6 +32,10 @@ const DEFAULT_ERROR_MESSAGES: ErrorMessages = {
         status: 'Internal Server Error',
         message: 'An Internal Server Error has Occured',
     },
+    501: {
+        status: 'Not Implemented',
+        message: 'This Feature has Not Yet Been Implemented',
+    },
 };
 
 export const json = {

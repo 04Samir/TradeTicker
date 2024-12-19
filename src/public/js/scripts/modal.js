@@ -6,6 +6,10 @@ function showModal(modalId) {
         .removeClass('scale-95 opacity-0')
         .addClass('scale-100 opacity-100');
 
+    if (modalId === 'user-modal') {
+        $('#h-captcha-policies').removeClass('hidden');
+    }
+
     if (modalId === 'search-modal') {
         $('#search-section').removeClass('max-w-sm').addClass('max-w-2xl');
         $('#search-container').addClass('w-full');
@@ -29,6 +33,11 @@ function hideModal(modalId) {
         .addClass('scale-95 opacity-0')
         .removeClass('scale-100 opacity-100');
 
+    if (modalId === 'user-modal') {
+        $('#h-captcha-policies').addClass('hidden');
+        $('#auth-form-alert').addClass('hidden').removeClass('flex');
+    }
+
     if (modalId === 'search-modal') {
         $('#search-section').addClass('max-w-sm').removeClass('max-w-2xl');
         $('#search-container').removeClass('w-full');
@@ -48,20 +57,12 @@ function hideModal(modalId) {
 function initModalEvents() {
     $('.modal-backdrop').on('click', function () {
         hideModal($(this).closest('.modal').attr('id'));
-
-        if ($(this).closest('.modal').attr('id') === 'user-modal') {
-            $('#h-captcha-policies').toggleClass('hidden');
-        }
     });
 
     $(document).on('keydown', function (event) {
         if (event.key === 'Escape') {
             $('.modal:not(.hidden)').each(function () {
                 hideModal($(this).attr('id'));
-
-                if ($(this).attr('id') === 'user-modal') {
-                    $('#h-captcha-policies').toggleClass('hidden');
-                }
 
                 const focusedInput = $('input:focus');
                 if (focusedInput.length > 0) {

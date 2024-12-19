@@ -8,7 +8,7 @@ import {
     refreshUI,
     saveAccessToken,
 } from './scripts/user.js';
-import { initChart } from './scripts/viewer.js';
+import { initChartEvents } from './scripts/viewer.js';
 
 $(function () {
     initTheme();
@@ -16,6 +16,7 @@ $(function () {
     initModalEvents();
     initUserEvents();
     initMenuEvents();
+    initChartEvents();
 
     let loggedIn = checkLoginState();
     let darkMode = isDarkMode();
@@ -35,7 +36,6 @@ $(function () {
     $('#user-button').on('click', function () {
         if (!loggedIn) {
             showModal('user-modal');
-            $('#h-captcha-policies').toggleClass('hidden');
         } else {
             location.href = '/@me';
         }
@@ -58,6 +58,7 @@ $(function () {
 
         const URL = $(this).attr('action');
         const METHOD = $(this).attr('method') || 'POST';
+        $('#auth-form-alert').addClass('hidden').removeClass('flex');
         $('#auth-form-error').text('');
 
         $.ajax({
@@ -65,8 +66,8 @@ $(function () {
             type: METHOD,
             contentType: 'application/json',
             data: JSON.stringify(formData),
-            success: function (response) {
-                saveAccessToken(response.access_token);
+            success: function (data) {
+                saveAccessToken(data.access_token);
                 refreshUI(true);
                 loggedIn = true;
                 const redirect = new URLSearchParams(
@@ -142,191 +143,42 @@ $(function () {
         window.onCaptchaError = onCaptchaError;
     }
 
-    if ($('#market-overview').length > 0) {
-        let currentCategory;
-        let currentTimeframe;
-        let marketItemOrder = [];
-
-        const marketData = {};
-        const marketTypes = ['stocks', 'crypto'];
-
-        marketTypes.forEach((type) => {
-            marketData[type] = fetchMarketData(type);
-        });
-
-        populateDynamicContent();
-        populateMarketItems(marketData[currentCategory], currentTimeframe);
-
-        function populateDynamicContent() {
-            const categoriesContainer = $('#market-categories');
-            categoriesContainer.empty();
-            marketTypes.forEach((type, index) => {
-                const categoryHTML = `
-                    <div class="market-category-tab pb-2 px-4 text-base font-medium cursor-pointer ${index === 0 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-800'}" data-category="${type}">
-                        ${type.charAt(0).toUpperCase() + type.slice(1)}
-                    </div>
-                `;
-                categoriesContainer.append(categoryHTML);
-            });
-
-            currentCategory = marketTypes[0];
-            populateTimeframes(marketData[currentCategory]);
+    $('#symbol-watchlist-toggle').on('click', function () {
+        if (!loggedIn) {
+            $('#auth-form-alert').removeClass('hidden').addClass('flex');
+            $('#user-button').trigger('click');
         }
 
-        function populateTimeframes(categoryData, timeframe = null) {
-            const timeframesContainer = $('#market-timeframes');
-            timeframesContainer.empty();
+        const symbol = $(this).data('ticker');
+        const URL = `/api/@me/watchlist/${symbol}`;
+        const METHOD = 'PUT';
 
-            const timeframes = Object.keys(categoryData || {});
-            timeframes.forEach((frame) => {
-                const timeframeHTML = `
-                    <button class="timeframe-button px-3 py-1 rounded-md text-sm font-medium ${frame === (timeframe || timeframes[0]) ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}" data-timeframe="${frame}">
-                        ${frame}
-                    </button>
-                `;
-                timeframesContainer.append(timeframeHTML);
-            });
+        $.ajax({
+            url: URL,
+            type: METHOD,
+            contentType: 'application/json',
+            success: function (data) {
+                $('#symbol-watchlist-toggle').empty();
 
-            currentTimeframe =
-                timeframe && timeframes.includes(timeframe)
-                    ? timeframe
-                    : timeframes[0];
-        }
-
-        function populateMarketItems(data, timeframe) {
-            const marketItemsContainer = $('#market-items');
-            marketItemsContainer.empty();
-
-            const items = Object.keys(data[timeframe]?.bars || {}).sort();
-
-            if (
-                !marketItemOrder.length ||
-                currentCategory.toLowerCase() === 'crypto'
-            ) {
-                marketItemOrder = items;
-            }
-
-            marketItemOrder.forEach((item, index) => {
-                const bars = data[timeframe]?.bars[item];
-                if (!bars) return;
-
-                const startBar = bars[0];
-                const latestBar = bars[bars.length - 1];
-
-                const openingPrice = parseFloat(startBar.c);
-                const latestPrice = parseFloat(latestBar.c);
-
-                const valueChange = (latestPrice - openingPrice).toFixed(2);
-                const percentageChange = openingPrice
-                    ? (
-                          ((latestPrice - openingPrice) / openingPrice) *
-                          100
-                      ).toFixed(2)
-                    : 0;
-
-                const priceLabel = latestPrice
-                    .toFixed(2)
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                const valueLabel = valueChange.replace(
-                    /\B(?=(\d{3})+(?!\d))/g,
-                    ',',
-                );
-                const percentageLabel = percentageChange.replace(
-                    /\B(?=(\d{3})+(?!\d))/g,
-                    ',',
-                );
-
-                const itemHTML = `
-                    <div class="market-item p-4 border border-gray-200 rounded-md shadow-sm flex flex-col space-y-2 ${index === 0 ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'} cursor-pointer text-gray-800" data-item="${item}">
-                        <div class="text-xl font-semibold">${item}</div>
-                        <div class="text-sm flex justify-between">
-                            <span>$${priceLabel} USD</span>
-                            <span class="${valueChange > 0 ? 'text-green-600' : 'text-red-600'} font-medium">
-                                ${valueChange > 0 ? '+' : ''}${valueLabel} (${percentageLabel}%)
-                            </span>
-                        </div>
-                    </div>
-                `;
-                marketItemsContainer.append(itemHTML);
-            });
-
-            $('.market-item')
-                .first()
-                .addClass('bg-blue-100')
-                .removeClass('bg-white hover:bg-gray-100');
-
-            initChart(
-                marketData[currentCategory],
-                currentTimeframe,
-                marketItemOrder[0],
-            );
-        }
-
-        function fetchMarketData(type) {
-            return $.ajax({
-                url: `/api/markets/${type}/movers`,
-                type: 'GET',
-                async: false,
-                error: function (error) {
-                    console.error('Error Fetching Market Data:', error);
-                },
-            }).responseJSON.data;
-        }
-
-        $(document).on('click', '.market-category-tab', function () {
-            const selectedCategory = $(this).data('category');
-            if (selectedCategory === currentCategory) return;
-
-            $('.market-category-tab')
-                .removeClass('border-b-2 border-blue-600 text-blue-600')
-                .addClass('text-gray-600 hover:text-gray-800');
-            $(this)
-                .addClass('border-b-2 border-blue-600 text-blue-600')
-                .removeClass('text-gray-600 hover:text-gray-800');
-
-            currentCategory = selectedCategory;
-            marketItemOrder = [];
-
-            populateTimeframes(marketData[currentCategory], currentTimeframe);
-            populateMarketItems(marketData[currentCategory], currentTimeframe);
+                if (data.code === 200) {
+                    $('#symbol-watchlist-toggle').append(`
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="rou</svg>nd" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                        </svg>
+                    `);
+                } else if (data.code === 201) {
+                    $('#symbol-watchlist-toggle').append(`
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
+                        </svg>
+                    `);
+                } else {
+                    console.error(data);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.responseJSON?.error?.message);
+            },
         });
-
-        $(document).on('click', '.timeframe-button', function () {
-            const selectedTimeframe = $(this).data('timeframe');
-            if (selectedTimeframe === currentTimeframe) return;
-
-            $('.timeframe-button')
-                .removeClass('bg-blue-100 text-blue-600')
-                .addClass('text-gray-600 hover:bg-gray-100');
-            $(this)
-                .addClass('bg-blue-100 text-blue-600')
-                .removeClass('text-gray-600 hover:bg-gray-100');
-
-            currentTimeframe = selectedTimeframe;
-            const selectedItem = $('.market-item.bg-blue-100').data('item');
-
-            populateMarketItems(marketData[currentCategory], currentTimeframe);
-            initChart(
-                marketData[currentCategory],
-                currentTimeframe,
-                selectedItem,
-            );
-        });
-
-        $(document).on('click', '.market-item', function () {
-            const selectedItem = $(this).data('item');
-            if (selectedItem === $('.market-item.bg-blue-100').data('item'))
-                return;
-
-            initChart(
-                marketData[currentCategory],
-                currentTimeframe,
-                selectedItem,
-            );
-        });
-
-        $('#market-chart-type-toggle').on('click', function () {
-            alert('Coming Soon!');
-        });
-    }
+    });
 });
