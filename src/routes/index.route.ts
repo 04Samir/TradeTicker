@@ -7,7 +7,7 @@ import { HTTPError, local, responder, yahoo } from '../utils';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('', async (req: Request, res: Response) => {
     let news;
 
     const response = await local.get('/api/markets/news', {
