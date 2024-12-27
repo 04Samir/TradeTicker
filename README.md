@@ -1,17 +1,19 @@
 <div align="center">
-   <h1>TradeTicker</h1>
-   <p>
-      A Modern Web Application for Tracking Stock Prices with a Customisable Watchlist.
-   </p>
-   <p>
-      <a href="#live-preview">Live Preview</a>
-      •
-      <a href="#installation">Installation</a>
-      •
-      <a href="#usage">Usage</a>
-      •
-      <a href="#roadmap">Roadmap</a>
-   </p>
+    <h1>TradeTicker</h1>
+    <p>
+        A Modern Web Application for Tracking Stock Prices with a Customisable Watchlist.
+    </p>
+    <p>
+        <a href="#live-preview">Live Preview</a>
+        •
+        <a href="#installation">Installation</a>
+        •
+        <a href="#usage">Usage</a>
+        •
+        <a href="#limitations">Limitations</a>
+        •
+        <a href="#roadmap">Roadmap</a>
+    </p>
 </div>
 
 ---
@@ -128,5 +130,31 @@ Check Out a Live Application to Experience the Features of **TradeTicker** for Y
 
 This Project is Licensed Under the GNU General Public License v3.0.  
 See the [LICENSE](LICENSE 'License') File for Details.
+
+---
+
+## Limitations
+
+While **TradeTicker** Provides Robust Features for Stock Tracking, There are Some Current Limitations to be Aware of:
+
+- **Slow Fetching**: Data Retrieval May be Slow Due to Current API Rate Limits, Especially when Multiple Users are Online.
+- **Limited Market Coverage**:
+    - Currently Only Supports US Stocks & Cryptocurrencies.
+    - Does Not Include Global Markets, Forex, or Futures etc.
+- **Data Availability**: Some Lesser-Known Stocks or Assets May Not be Available via the Current API.
+
+> **Planned Improvements**: Check the [Roadmap](#roadmap) Section for Upcoming Enhancements Addressing These Limitations.
+
+---
+
+## Roadmap
+
+Planned Updates & Improvements for **TradeTicker**:
+
+- [ ] Migrate to a Better Stock API for Reduced Rate Limits & More Comprehensive Data.
+- [ ] Update the UI to a More Modern Design.
+- [ ] Optimise the Build Process by Possibly Utilising **Gulp** for Task Automation.
+- [ ] Add Support for Advanced Stock Data Visualisations (e.g. Candle-Stick Charts).
+- [ ] Migrate the Database to **PostgreSQL** for Enhanced Performance & Security.
 
 ---
