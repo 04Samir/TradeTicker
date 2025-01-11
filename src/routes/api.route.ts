@@ -49,6 +49,8 @@ function calculateDate(
 
     const startDate = new Date(endDate);
 
+    console.log(timeframe, end, onlyWeekdays, startDate, endDate);
+
     switch (timeframe) {
         case '1D':
             startDate.setHours(0, 0, 0, 0);
