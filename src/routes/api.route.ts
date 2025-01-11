@@ -40,16 +40,14 @@ function adjustToWeekday(date: Date): Date {
 function calculateDate(
     timeframe: string,
     end: string,
-    onlyWeekdays: boolean,
+    fixWeekends: boolean,
 ): { start: string; end: string } {
-    let endDate = new Date(end);
-    if (onlyWeekdays) {
-        endDate = adjustToWeekday(endDate);
+    const endDate = new Date(end);
+    let startDate = new Date(endDate);
+
+    if (fixWeekends) {
+        startDate = adjustToWeekday(startDate);
     }
-
-    const startDate = new Date(endDate);
-
-    console.log(timeframe, end, onlyWeekdays, startDate, endDate);
 
     switch (timeframe) {
         case '1D':
