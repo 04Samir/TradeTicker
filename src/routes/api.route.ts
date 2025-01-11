@@ -43,11 +43,11 @@ function calculateDate(
     onlyWeekdays: boolean,
 ): { start: string; end: string } {
     let endDate = new Date(end);
-    const startDate = new Date(endDate);
-
     if (onlyWeekdays) {
         endDate = adjustToWeekday(endDate);
     }
+
+    const startDate = new Date(endDate);
 
     switch (timeframe) {
         case '1D':
